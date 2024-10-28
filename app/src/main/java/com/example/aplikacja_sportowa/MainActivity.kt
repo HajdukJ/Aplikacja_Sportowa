@@ -27,7 +27,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
 
-        val toggle = ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav)
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.open_nav,
+            R.string.close_nav
+        )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
@@ -38,31 +44,37 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when(item.itemId){
+        when (item.itemId) {
             R.id.nav_home -> {
                 replaceFragment(HomeFragment())
                 title = "Home"
             }
+
             R.id.nav_profile -> {
                 replaceFragment(ProfileFragment())
                 title = "Profile"
             }
+
             R.id.nav_activity -> {
                 replaceFragment(ActivityFragment())
                 title = "Activity"
             }
+
             R.id.nav_run -> {
                 replaceFragment(RunFragment())
                 title = "Run"
             }
+
             R.id.nav_settings -> {
                 replaceFragment(SettingsFragment())
                 title = "Settings"
             }
+
             R.id.nav_about -> {
                 replaceFragment(AboutFragment())
                 title = "About Us"
             }
+
             R.id.nav_logout -> {
                 Toast.makeText(this, "Logout!", Toast.LENGTH_SHORT).show()
                 drawerLayout.closeDrawer(GravityCompat.START)
@@ -74,17 +86,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
-    private fun replaceFragment(fragment:Fragment){
+    private fun replaceFragment(fragment: Fragment) {
         val transaction: FragmentTransaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.fragment_container, fragment)
         transaction.commit()
     }
+
     override fun onBackPressed() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)){
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
-        }
-        else {
-            onBackPressedDispatcher.onBackPressed()
+        } else {
+            super.onBackPressed()
         }
     }
 }
