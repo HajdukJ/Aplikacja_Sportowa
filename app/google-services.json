@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "24927884513",
+    "project_id": "aplikacja-sportowa-18f09",
+    "storage_bucket": "aplikacja-sportowa-18f09.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:24927884513:android:72590c3fcd246aec7213a0",
+        "android_client_info": {
+          "package_name": "com.example.aplikacja_sportowa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCFwATb0kNdNDdFQmtwyu2sBE9rrfqVoLs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
