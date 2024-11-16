@@ -17,33 +17,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var firebaseAuth: FirebaseAuth
-    private var isUserLoggedIn = false // "Flaga" - Sprawdza, czy użytkownik jest już zalogowany.
+    private var isUserLoggedIn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main) // Ustawienie głównego widoku aplikacji.
+        setContentView(R.layout.activity_main)
 
         firebaseAuth = FirebaseAuth.getInstance()
-        drawerLayout = findViewById(R.id.drawer_layout) // Pobranie layout'u.
-        val toolbar = findViewById<Toolbar>(R.id.toolbar) // Pobranie paska toolbar.
+        drawerLayout = findViewById(R.id.drawer_layout)
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        supportActionBar?.setDisplayHomeAsUpEnabled(false) // Wyłączenie ikony menu.
 
-        val navigationView = findViewById<NavigationView>(R.id.nav_view) // Pobranie nawigacji.
+        val navigationView = findViewById<NavigationView>(R.id.nav_view)
         navigationView.setNavigationItemSelectedListener(this)
 
-        // Sprawdza, czy użytkownik jest już zalogowany.
         if (firebaseAuth.currentUser == null) {
-            // Jeśli jest niezalogowany, przenosi go do rejestracji.
+            toolbar.visibility = android.view.View.GONE
+
             supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, RegisterFragment())
+                .replace(R.id.fragment_container, LoginFragment())
                 .commit()
 
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         } else {
-            // Użytkownik jest zalogowany.
             isUserLoggedIn = true
-            setupDrawerToggle(toolbar)  // Ustawienie nawigacji (toolbar) dopiero po zalogowaniu.
+            setupDrawerToggle(toolbar)
 
             if (savedInstanceState == null) {
                 replaceFragment(HomeFragment())
@@ -53,7 +51,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun setupDrawerToggle(toolbar: Toolbar) {
-        // Konfiguracja ActionBarDrawerToggle po zalogowaniu użytkownika.
         val toggle = ActionBarDrawerToggle(
             this,
             drawerLayout,
@@ -68,7 +65,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        // Obsługa kliknięć w menu nawigacji.
         when (item.itemId) {
             R.id.nav_home -> {
                 replaceFragment(HomeFragment())
@@ -95,26 +91,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 title = "About Us"
             }
             R.id.nav_logout -> {
-                firebaseAuth.signOut() // Wylogowanie użytkownika.
-                Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show() // Powiadomienie o wylogowaniu.
-                finish() // Powrót do ekranu logowania.
+                firebaseAuth.signOut()
+                Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show()
+                finish()
                 return true
             }
         }
-        item.isChecked = true // Ustawienie klikniętego elementu w menu jako zaznaczonego.
+        item.isChecked = true
         drawerLayout.closeDrawer(GravityCompat.START)
         return true
     }
 
     private fun replaceFragment(fragment: Fragment) {
-        // Metoda służąca do zamiany fragmentu.
         val transaction: FragmentTransaction = supportFragmentManager.beginTransaction()
         transaction.replace(R.id.fragment_container, fragment)
         transaction.commit()
     }
 
     override fun onBackPressed() {
-        // Obsługa przycisku "Wstecz".
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)
         } else {
