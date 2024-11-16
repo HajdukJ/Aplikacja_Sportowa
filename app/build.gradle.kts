@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.aplikacja_sportowa"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.aplikacja_sportowa"
@@ -40,7 +40,7 @@ android {
 }
 
 dependencies {
-
+    implementation(libs.biometricKtx)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
