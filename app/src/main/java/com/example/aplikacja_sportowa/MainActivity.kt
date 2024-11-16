@@ -17,7 +17,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var firebaseAuth: FirebaseAuth
-    private var isUserLoggedIn = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,7 +39,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         } else {
-            isUserLoggedIn = true
             setupDrawerToggle(toolbar)
 
             if (savedInstanceState == null) {
@@ -61,8 +59,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
-        supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        supportActionBar?.setHomeAsUpIndicator(R.drawable.baseline_menu_24)
         drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_UNLOCKED)
     }
 
@@ -76,13 +72,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 replaceFragment(ProfileFragment())
                 title = "Profile"
             }
-            R.id.nav_activity -> {
-                replaceFragment(ActivityFragment())
-                title = "Activity"
-            }
             R.id.nav_run -> {
                 replaceFragment(RunFragment())
                 title = "Run"
+            }
+            R.id.nav_activity -> {
+                replaceFragment(ActivityFragment())
+                title = "Activity"
             }
             R.id.nav_settings -> {
                 replaceFragment(SettingsFragment())
@@ -90,7 +86,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             R.id.nav_about -> {
                 replaceFragment(AboutFragment())
-                title = "About Us"
+                title = "About us"
             }
             R.id.nav_logout -> {
                 firebaseAuth.signOut()
