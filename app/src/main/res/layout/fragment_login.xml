@@ -7,13 +7,32 @@
     android:layout_height="match_parent"
     tools:context=".LoginFragment">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="650dp"
+        android:background="@drawable/ic_wave"
+        tools:ignore="MissingConstraints">
+        <TextView
+            android:id="@+id/text_welcome"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-150dp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:textSize="40sp"
+            android:text="Welcome Back \nLogin to your account"
+            android:gravity="center"
+            android:layout_gravity="center_vertical">
+        </TextView>
+    </LinearLayout>
+    
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/emailLayout"
         style="@style/LoginTextInputOuterFieldStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="300dp"
+        android:layout_marginTop="420dp"
         app:boxStrokeColor="@color/blue"
         app:hintTextColor="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
@@ -61,7 +80,7 @@
         android:layout_marginHorizontal="140dp"
         android:background="@drawable/rounded_corners"
         android:text="Log In"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="28dp"
         android:textColor="@color/white"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/passwordLayout"
@@ -75,7 +94,7 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:src="@drawable/baseline_fingerprint_24"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="28dp"
         android:clickable="true"
         android:focusable="true"
         app:layout_constraintTop_toBottomOf="@id/button"
