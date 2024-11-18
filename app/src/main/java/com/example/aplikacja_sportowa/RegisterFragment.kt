@@ -24,7 +24,6 @@ class RegisterFragment : Fragment() {
         firebaseAuth = FirebaseAuth.getInstance()
         biometricAuthenticator = BiometricAuthenticator(requireActivity())
 
-        // Przejście do ekranu logowania
         binding.textView.setOnClickListener {
             val fragment = LoginFragment()
             requireActivity().supportFragmentManager.beginTransaction()
@@ -33,7 +32,6 @@ class RegisterFragment : Fragment() {
                 .commit()
         }
 
-        // Rejestracja użytkownika
         binding.button.setOnClickListener {
             val email = binding.emailbox.text.toString().trim()
             val password = binding.passwordbox.text.toString().trim()
@@ -42,19 +40,11 @@ class RegisterFragment : Fragment() {
 
             if (email.isNotEmpty() && password.isNotEmpty() && confirmPassword.isNotEmpty()) {
                 if (password == confirmPassword) {
-                    firebaseAuth.createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                showToast("Account created successfully!")
-                                if (useFingerprint) {
-                                    promptForFingerprint(email)
-                                } else {
-                                    navigateToLoginFragment()
-                                }
-                            } else {
-                                showToast(task.exception?.message ?: "Error creating account!")
-                            }
-                        }
+                    if (useFingerprint) {
+                        promptForFingerprint(email, password)
+                    } else {
+                        createUserAccount(email, password)
+                    }
                 } else {
                     showToast("Passwords do not match!")
                 }
@@ -66,17 +56,14 @@ class RegisterFragment : Fragment() {
         return binding.root
     }
 
-    private fun promptForFingerprint(email: String) {
+    private fun promptForFingerprint(email: String, password: String) {
         biometricAuthenticator.promptBiometricAuth(
             title = "Register Fingerprint",
             subTitle = "Save your fingerprint for future logins",
-            negativeButtonText = "Skip",
+            negativeButtonText = "Cancel",
             fragmentActivity = requireActivity(),
             onSuccess = {
-                val sharedPrefs = requireActivity().getSharedPreferences("BiometricPrefs", 0)
-                sharedPrefs.edit().putString("fingerprint_user", email).apply()
-                showToast("Fingerprint saved!")
-                navigateToLoginFragment()
+                createUserAccount(email, password)
             },
             onError = { errorCode, errorString ->
                 if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
@@ -89,8 +76,20 @@ class RegisterFragment : Fragment() {
         )
     }
 
-    private fun navigateToLoginFragment() {
-        val fragment = LoginFragment()
+    private fun createUserAccount(email: String, password: String) {
+        firebaseAuth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    showToast("Account created successfully!")
+                    navigateToUserDataFragment()
+                } else {
+                    showToast(task.exception?.message ?: "Error creating account!")
+                }
+            }
+    }
+
+    private fun navigateToUserDataFragment() {
+        val fragment = UserDataFragment()
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .addToBackStack(null)

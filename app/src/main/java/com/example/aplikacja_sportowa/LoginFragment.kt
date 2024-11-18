@@ -75,7 +75,7 @@ class LoginFragment : Fragment() {
                 },
                 onError = { errorCode, errorString ->
                     if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                        showToast("Error: $errorString")
+                        showToast("Error login with fingerprint: $errorString")
                     }
                 },
                 onFailed = {

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".RegisterFragment">
+    tools:context=".UserDataFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,133 +21,107 @@
             android:textSize="40sp"
             android:text="Upload your data"
             android:gravity="center"
-            android:layout_gravity="center_vertical">
-        </TextView>
+            android:layout_gravity="center_vertical" />
     </LinearLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/usernameLayout"
-        style="@style/LoginTextInputOuterFieldStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="320dp"
-        app:boxStrokeColor="@color/blue"
-        app:hintTextColor="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/usernamebox"
-            style="@style/LoginTextInputInnerFieldStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Your Username"/>
+            android:hint="Enter Your Username"
+            android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/heightLayout"
-        style="@style/LoginTextInputOuterFieldStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="24dp"
-        app:boxStrokeColor="@color/blue"
-        app:hintTextColor="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/usernameLayout">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/heightbox"
-            style="@style/LoginTextInputInnerFieldStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Your Height"/>
+            android:hint="Enter Your Height"
+            android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/weightLayout"
-        style="@style/LoginTextInputOuterFieldStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="24dp"
-        app:boxStrokeColor="@color/blue"
-        app:hintTextColor="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/heightLayout">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/weightbox"
-            style="@style/LoginTextInputInnerFieldStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Your Weight" />
+            android:hint="Enter Your Weight"
+            android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/ageLayout"
-        style="@style/LoginTextInputOuterFieldStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <Spinner
+        android:id="@+id/ageSpinner"
+        android:layout_width="200dp"
+        android:layout_height="30dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="24dp"
-        app:boxStrokeColor="@color/blue"
-        app:hintTextColor="@color/blue"
+        android:layout_marginTop="34dp"
+        android:background="@drawable/filler_spinner_dropdown"
+        android:popupBackground="@color/blue"
+        android:spinnerMode="dropdown"
+        android:entries="@array/age_array"
+        android:gravity="center"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/weightLayout">
+        app:layout_constraintTop_toBottomOf="@id/weightLayout" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/agebox"
-            style="@style/LoginTextInputInnerFieldStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Choose your Age"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/genderLayout"
-        style="@style/LoginTextInputOuterFieldStyle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <Spinner
+        android:id="@+id/genderSpinner"
+        android:layout_width="200dp"
+        android:layout_height="30dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="24dp"
-        app:boxStrokeColor="@color/blue"
-        app:hintTextColor="@color/blue"
+        android:layout_marginTop="34dp"
+        android:background="@drawable/filler_spinner_dropdown"
+        android:popupBackground="@color/blue"
+        android:spinnerMode="dropdown"
+        android:entries="@array/gender_array"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:textColor="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ageLayout">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/agegender"
-            style="@style/LoginTextInputInnerFieldStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Choose your Gender"/>
-    </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintTop_toBottomOf="@id/ageSpinner" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button"
-        android:layout_width="0dp"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="140dp"
         android:background="@drawable/rounded_corners"
-        android:text="Create an account"
+        android:text="Create account"
         android:textColor="@color/white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/genderLayout" />
-
+        app:layout_constraintTop_toBottomOf="@id/genderSpinner" />
 </androidx.constraintlayout.widget.ConstraintLayout>
