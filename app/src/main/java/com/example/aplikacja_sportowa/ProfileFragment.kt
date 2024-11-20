@@ -4,10 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import android.graphics.BitmapFactory
+import android.util.Base64
 
 class ProfileFragment : Fragment() {
 
@@ -19,6 +22,7 @@ class ProfileFragment : Fragment() {
     private lateinit var genderTextView: TextView
     private lateinit var heightTextView: TextView
     private lateinit var weightTextView: TextView
+    private lateinit var profileImageView: ImageView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,6 +36,7 @@ class ProfileFragment : Fragment() {
         genderTextView = view.findViewById(R.id.genderTextView)
         heightTextView = view.findViewById(R.id.heightTextView)
         weightTextView = view.findViewById(R.id.weightTextView)
+        profileImageView = view.findViewById(R.id.profileImageView)
 
         firebaseAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("Users")
@@ -54,6 +59,7 @@ class ProfileFragment : Fragment() {
                     val height = snapshot.child("height").value?.toString() ?: "N/A"
                     val weight = snapshot.child("weight").value?.toString() ?: "N/A"
                     val email = currentUser.email ?: "N/A"
+                    val profileImageBase64 = snapshot.child("image").value?.toString()
 
                     usernameTextView.text = "Username: $username"
                     emailTextView.text = "Email: $email"
@@ -61,6 +67,14 @@ class ProfileFragment : Fragment() {
                     genderTextView.text = "Gender: $gender"
                     heightTextView.text = "Height: $height cm"
                     weightTextView.text = "Weight: $weight kg"
+
+                    if (!profileImageBase64.isNullOrEmpty()) {
+                        val imageBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)
+                        val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+                        profileImageView.setImageBitmap(bitmap)
+                    } else {
+                        profileImageView.setImageResource(R.drawable.logo_aplikacja)
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
