@@ -1,6 +1,13 @@
 package com.example.aplikacja_sportowa
 
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,12 +19,18 @@ import com.example.aplikacja_sportowa.databinding.FragmentUserDataBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 
 class UserDataFragment : Fragment() {
 
     private lateinit var binding: FragmentUserDataBinding
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var database: DatabaseReference
+
+    private var imageUri: Uri? = null
+    private var imageBase64: String? = null
+    private val PICK_IMAGE_REQUEST = 1
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -47,11 +60,43 @@ class UserDataFragment : Fragment() {
             Toast.makeText(requireContext(), "Upload your data first!", Toast.LENGTH_SHORT).show()
         }
 
-        binding.button.setOnClickListener {
-            saveUserData()
-        }
+        binding.button.setOnClickListener { saveUserData() }
+
+        binding.profileImageView.setOnClickListener { openFileChooser() }
 
         return binding.root
+    }
+
+    private fun openFileChooser() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, PICK_IMAGE_REQUEST)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+            imageUri = data.data
+
+            binding.profileImageView.setImageURI(imageUri)
+
+            convertImageToBase64()
+        }
+    }
+
+    private fun convertImageToBase64() {
+        try {
+            val inputStream: InputStream? = imageUri?.let { requireContext().contentResolver.openInputStream(it) }
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
+            val imageBytes: ByteArray = outputStream.toByteArray()
+            imageBase64 = Base64.encodeToString(imageBytes, Base64.DEFAULT)
+            Log.d("UserDataFragment", "Image converted to successfully!")
+        } catch (e: Exception) {
+            Log.e("UserDataFragment", "Error converting image: ${e.message}", e)
+            Toast.makeText(requireContext(), "Error converting image: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun saveUserData() {
@@ -65,6 +110,7 @@ class UserDataFragment : Fragment() {
             val userId = firebaseAuth.currentUser?.uid
             if (userId != null) {
                 val userMap = mapOf(
+                    "image" to imageBase64,
                     "username" to username,
                     "age" to age,
                     "gender" to gender,
@@ -90,7 +136,6 @@ class UserDataFragment : Fragment() {
 
     private fun navigateToLoginFragment() {
         val fragment = LoginFragment()
-
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
