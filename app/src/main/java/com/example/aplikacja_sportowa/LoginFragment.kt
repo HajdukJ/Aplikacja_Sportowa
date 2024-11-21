@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.biometric.BiometricPrompt
 import com.example.aplikacja_sportowa.databinding.FragmentLoginBinding
 import com.google.firebase.auth.FirebaseAuth
 
@@ -41,7 +40,7 @@ class LoginFragment : Fragment() {
                 firebaseAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            navigateToMainActivity()
+                            checkForFingerprint(email)
                         } else {
                             showToast(task.exception?.localizedMessage ?: "Login failed")
                         }
@@ -51,40 +50,31 @@ class LoginFragment : Fragment() {
             }
         }
 
-        binding.fingerprintIcon.setOnClickListener {
+        return binding.root
+    }
+
+    private fun checkForFingerprint(email: String) {
+        val sharedPrefs = requireActivity().getSharedPreferences("BiometricPrefs", 0)
+        val storedEmail = sharedPrefs.getString("fingerprint_user", null)
+
+        if (email == storedEmail) {
             biometricAuthenticator.promptBiometricAuth(
                 title = "Login",
                 subTitle = "Authenticate with your fingerprint",
                 negativeButtonText = "Cancel",
-                fragmentActivity = requireActivity(),
                 onSuccess = {
-                    val sharedPrefs = requireActivity().getSharedPreferences("BiometricPrefs", 0)
-                    val email = sharedPrefs.getString("fingerprint_user", null)
-                    if (email != null) {
-                        firebaseAuth.signInWithEmailAndPassword(email, "default_password")
-                            .addOnCompleteListener { task ->
-                                if (task.isSuccessful) {
-                                    navigateToMainActivity()
-                                } else {
-                                    showToast("Error logging in with fingerprint!")
-                                }
-                            }
-                    } else {
-                        showToast("No account linked to this fingerprint!")
-                    }
+                    navigateToMainActivity()
                 },
-                onError = { errorCode, errorString ->
-                    if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                        showToast("Error login with fingerprint: $errorString")
-                    }
+                onError = { _, errorString ->
+                    showToast("Error with fingerprint: $errorString")
                 },
                 onFailed = {
                     showToast("Invalid fingerprint. Try again.")
                 }
             )
+        } else {
+            navigateToMainActivity()
         }
-
-        return binding.root
     }
 
     private fun navigateToMainActivity() {

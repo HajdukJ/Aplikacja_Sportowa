@@ -15,6 +15,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.example.aplikacja_sportowa.databinding.FragmentUserDataBinding
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
@@ -77,10 +78,9 @@ class UserDataFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
             imageUri = data.data
-
             binding.profileImageView.setImageURI(imageUri)
-
             convertImageToBase64()
+            loadImageIntoCircle()
         }
     }
 
@@ -96,6 +96,15 @@ class UserDataFragment : Fragment() {
         } catch (e: Exception) {
             Log.e("UserDataFragment", "Error converting image: ${e.message}", e)
             Toast.makeText(requireContext(), "Error converting image: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun loadImageIntoCircle() {
+        if (imageUri != null) {
+            Glide.with(requireContext())
+                .load(imageUri)
+                .circleCrop()
+                .into(binding.profileImageView)
         }
     }
 
