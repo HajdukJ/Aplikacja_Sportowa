@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.biometric.BiometricPrompt
 import com.example.aplikacja_sportowa.databinding.FragmentRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
 
@@ -43,7 +42,7 @@ class RegisterFragment : Fragment() {
                     if (useFingerprint) {
                         promptForFingerprint(email, password)
                     } else {
-                        createUserAccount(email, password)
+                        createUserAccount(email, password, false)
                     }
                 } else {
                     showToast("Passwords do not match!")
@@ -61,14 +60,11 @@ class RegisterFragment : Fragment() {
             title = "Register Fingerprint",
             subTitle = "Save your fingerprint for future logins",
             negativeButtonText = "Cancel",
-            fragmentActivity = requireActivity(),
             onSuccess = {
-                createUserAccount(email, password)
+                createUserAccount(email, password, true)
             },
-            onError = { errorCode, errorString ->
-                if (errorCode != BiometricPrompt.ERROR_USER_CANCELED) {
-                    showToast("Error saving fingerprint: $errorString")
-                }
+            onError = { _, errorString ->
+                showToast("Error saving fingerprint: $errorString")
             },
             onFailed = {
                 showToast("Fingerprint registration failed!")
@@ -76,10 +72,15 @@ class RegisterFragment : Fragment() {
         )
     }
 
-    private fun createUserAccount(email: String, password: String) {
+    private fun createUserAccount(email: String, password: String, useFingerprint: Boolean) {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    val sharedPrefs = requireActivity().getSharedPreferences("BiometricPrefs", 0)
+                    if (useFingerprint) {
+                        sharedPrefs.edit().putString("fingerprint_user", email).apply()
+                    }
+
                     showToast("Account created successfully!")
                     navigateToUserDataFragment()
                 } else {

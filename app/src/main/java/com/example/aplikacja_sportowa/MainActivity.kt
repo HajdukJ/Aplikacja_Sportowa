@@ -52,10 +52,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             if (savedInstanceState == null) {
                 replaceFragment(HomeFragment())
                 navigationView.setCheckedItem(R.id.nav_home)
+                title = "Home"
             }
         } else {
             replaceFragment(LoginFragment())
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            supportActionBar?.hide()
         }
     }
 
@@ -109,26 +111,32 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_home -> {
                 replaceFragment(HomeFragment())
                 title = "Home"
+                supportActionBar?.show()
             }
             R.id.nav_profile -> {
                 replaceFragment(ProfileFragment())
                 title = "Profile"
+                supportActionBar?.show()
             }
             R.id.nav_run -> {
                 replaceFragment(RunFragment())
                 title = "Run"
+                supportActionBar?.show()
             }
             R.id.nav_activity -> {
                 replaceFragment(ActivityFragment())
                 title = "Activity"
+                supportActionBar?.show()
             }
             R.id.nav_settings -> {
                 replaceFragment(SettingsFragment())
                 title = "Settings"
+                supportActionBar?.show()
             }
             R.id.nav_about -> {
                 replaceFragment(AboutFragment())
                 title = "About us"
+                supportActionBar?.show()
             }
             R.id.nav_logout -> {
                 firebaseAuth.signOut()
