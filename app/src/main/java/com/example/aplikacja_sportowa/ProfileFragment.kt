@@ -1,16 +1,17 @@
 package com.example.aplikacja_sportowa
 
 import android.os.Bundle
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import android.graphics.BitmapFactory
-import android.util.Base64
 
 class ProfileFragment : Fragment() {
 
@@ -50,28 +51,23 @@ class ProfileFragment : Fragment() {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
             val userId = currentUser.uid
-
             database.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    val username = snapshot.child("username").value?.toString() ?: "N/A"
-                    val age = snapshot.child("age").value?.toString() ?: "N/A"
-                    val gender = snapshot.child("gender").value?.toString() ?: "N/A"
-                    val height = snapshot.child("height").value?.toString() ?: "N/A"
-                    val weight = snapshot.child("weight").value?.toString() ?: "N/A"
-                    val email = currentUser.email ?: "N/A"
+                    usernameTextView.text = "Username: ${snapshot.child("username").value.toString() ?: "N/A"}"
+                    emailTextView.text = "Email: ${currentUser.email ?: "N/A"}"
+                    ageTextView.text = "Age: ${snapshot.child("age").value.toString() ?: "N/A"}"
+                    genderTextView.text = "Gender: ${snapshot.child("gender").value.toString() ?: "N/A"}"
+                    heightTextView.text = "Height: ${snapshot.child("height").value.toString() ?: "N/A"} cm"
+                    weightTextView.text = "Weight: ${snapshot.child("weight").value.toString() ?: "N/A"} kg"
+
                     val profileImageBase64 = snapshot.child("image").value?.toString()
-
-                    usernameTextView.text = "Username: $username"
-                    emailTextView.text = "Email: $email"
-                    ageTextView.text = "Age: $age"
-                    genderTextView.text = "Gender: $gender"
-                    heightTextView.text = "Height: $height cm"
-                    weightTextView.text = "Weight: $weight kg"
-
                     if (!profileImageBase64.isNullOrEmpty()) {
                         val imageBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)
                         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-                        profileImageView.setImageBitmap(bitmap)
+                        Glide.with(requireContext())
+                            .load(bitmap)
+                            .circleCrop()
+                            .into(profileImageView)
                     } else {
                         profileImageView.setImageResource(R.drawable.logo_aplikacja)
                     }
