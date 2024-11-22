@@ -2,16 +2,20 @@ package com.example.aplikacja_sportowa
 
 import android.os.Bundle
 import android.util.Base64
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import android.graphics.BitmapFactory
+import android.widget.Toast
 
 class ProfileFragment : Fragment() {
 
@@ -24,6 +28,7 @@ class ProfileFragment : Fragment() {
     private lateinit var heightTextView: TextView
     private lateinit var weightTextView: TextView
     private lateinit var profileImageView: ImageView
+    private lateinit var deleteAccountButton: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,11 +43,16 @@ class ProfileFragment : Fragment() {
         heightTextView = view.findViewById(R.id.heightTextView)
         weightTextView = view.findViewById(R.id.weightTextView)
         profileImageView = view.findViewById(R.id.profileImageView)
+        deleteAccountButton = view.findViewById(R.id.deleteAccount)
 
         firebaseAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("Users")
 
         loadUserData()
+
+        deleteAccountButton.setOnClickListener {
+            showDeleteAccountDialog()
+        }
 
         return view
     }
@@ -80,5 +90,60 @@ class ProfileFragment : Fragment() {
         } else {
             usernameTextView.text = "User not logged in"
         }
+    }
+
+    private fun showDeleteAccountDialog() {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setMessage("Do you want to delete your account?")
+            .setCancelable(false)
+            .setNegativeButton("Cancel") { dialog, id ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Delete") { dialog, id ->
+                deleteUserAccount()
+            }
+
+        val alert = builder.create()
+        alert.show()
+    }
+
+    private fun deleteUserAccount() {
+        val currentUser = firebaseAuth.currentUser
+        if (currentUser != null) {
+            val userId = currentUser.uid
+
+            database.child(userId).removeValue().addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    currentUser.delete().addOnCompleteListener { deleteTask ->
+                        if (deleteTask.isSuccessful) {
+                            showToast("Successfully deleted account.")
+                            firebaseAuth.signOut()
+                            requireActivity().finish()
+                        } else {
+                            showError("Failed to delete account from Firebase Authentication.")
+                        }
+                    }
+                } else {
+                    showError("Failed to delete account from Realtime Database.")
+                }
+            }
+        }
+    }
+
+    private fun showError(message: String) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("OK") { dialog, id ->
+                dialog.dismiss()
+            }
+        val alert = builder.create()
+        alert.show()
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).apply {
+            setGravity(Gravity.BOTTOM, 0, 100)
+        }.show()
     }
 }
