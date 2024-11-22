@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,14 +7,14 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="550dp"
+        android:layout_height="500dp"
         android:background="@drawable/ic_wave"
         tools:ignore="MissingConstraints">
         <TextView
             android:id="@+id/text_welcome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="-150dp"
+            android:layout_marginTop="-170dp"
             android:textColor="@color/white"
             android:textStyle="bold"
             android:textSize="40sp"
@@ -26,10 +25,10 @@
 
     <ImageView
         android:id="@+id/profileImageView"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="130dp"
         android:clickable="true"
         android:onClick="onProfileImageClick"
         android:scaleType="centerCrop"
@@ -40,12 +39,26 @@
         tools:layout_editor_absoluteX="31dp"
         tools:ignore="MissingConstraints" />
 
+    <TextView
+        android:id="@+id/selectImageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_centerHorizontal="true"
+        android:text="Select an image"
+        android:textSize="16sp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/profileImageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/usernameLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="40dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/profileImageView">
@@ -94,38 +107,123 @@
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <Spinner
-        android:id="@+id/ageSpinner"
-        android:layout_width="200dp"
-        android:layout_height="30dp"
+    <TextView
+        android:id="@+id/genderLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="24dp"
-        android:background="@drawable/filler_spinner_dropdown"
-        android:popupBackground="@color/blue"
-        android:spinnerMode="dropdown"
-        android:entries="@array/age_array"
+        android:text="- - - - Choose your Gender - - - -"
+        android:textSize="18sp"
+        android:textColor="@color/black"
         android:gravity="center"
-        android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/weightLayout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/weightLayout" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <Spinner
-        android:id="@+id/genderSpinner"
-        android:layout_width="200dp"
-        android:layout_height="30dp"
+    <LinearLayout
+        android:id="@+id/genderLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="34dp"
-        android:background="@drawable/filler_spinner_dropdown"
-        android:popupBackground="@color/blue"
-        android:spinnerMode="dropdown"
-        android:entries="@array/gender_array"
+        android:orientation="horizontal"
         android:gravity="center"
-        android:textAlignment="center"
-        android:textColor="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/genderLabel"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ageSpinner" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/maleButton"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="Male"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:background="@drawable/selected_border_background" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/femaleButton"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="Female"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:background="@drawable/selected_border_background" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/ageLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:text="- - - - Choose your Age - - - -"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/genderLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/ageLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/ageLabel"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/age18_24"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="18-24"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:background="@drawable/selected_border_background" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/age25_34"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="25-34"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:background="@drawable/selected_border_background" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/age35_44"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="35-44"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:background="@drawable/selected_border_background" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/age45Plus"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:text="45+"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:background="@drawable/selected_border_background" />
+    </LinearLayout>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button"
@@ -140,5 +238,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/genderSpinner" />
+        app:layout_constraintTop_toBottomOf="@id/ageLayout" />
 </androidx.constraintlayout.widget.ConstraintLayout>
