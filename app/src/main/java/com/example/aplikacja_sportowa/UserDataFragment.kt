@@ -11,7 +11,6 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
@@ -33,6 +32,9 @@ class UserDataFragment : Fragment() {
     private var imageBase64: String? = null
     private val PICK_IMAGE_REQUEST = 1
 
+    private var selectedGender: String? = null
+    private var selectedAge: String? = null
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -41,31 +43,73 @@ class UserDataFragment : Fragment() {
         firebaseAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("Users")
 
-        val ageAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.age_array,
-            android.R.layout.simple_spinner_item
-        )
-        ageAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.ageSpinner.adapter = ageAdapter
-
-        val genderAdapter = ArrayAdapter.createFromResource(
-            requireContext(),
-            R.array.gender_array,
-            android.R.layout.simple_spinner_item
-        )
-        genderAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.genderSpinner.adapter = genderAdapter
-
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             Toast.makeText(requireContext(), "Upload your data first!", Toast.LENGTH_SHORT).show()
         }
 
         binding.button.setOnClickListener { saveUserData() }
-
         binding.profileImageView.setOnClickListener { openFileChooser() }
 
+        setupGenderSelection()
+        setupAgeSelection()
+
         return binding.root
+    }
+
+    private fun setupGenderSelection() {
+        resetGenderButtonStyles()
+
+        binding.maleButton.setOnClickListener {
+            selectedGender = "Male"
+            updateGenderButtonStyles(binding.maleButton)
+        }
+        binding.femaleButton.setOnClickListener {
+            selectedGender = "Female"
+            updateGenderButtonStyles(binding.femaleButton)
+        }
+    }
+
+    private fun resetGenderButtonStyles() {
+        binding.maleButton.setBackgroundResource(R.drawable.field_border_background)
+        binding.femaleButton.setBackgroundResource(R.drawable.field_border_background)
+    }
+
+    private fun updateGenderButtonStyles(selectedButton: View) {
+        resetGenderButtonStyles()
+        selectedButton.setBackgroundResource(R.drawable.selected_border_background)
+    }
+
+    private fun setupAgeSelection() {
+        resetAgeButtonStyles()
+
+        binding.age1824.setOnClickListener {
+            selectedAge = "18-24"
+            updateAgeButtonStyles(binding.age1824)
+        }
+        binding.age2534.setOnClickListener {
+            selectedAge = "25-34"
+            updateAgeButtonStyles(binding.age2534)
+        }
+        binding.age3544.setOnClickListener {
+            selectedAge = "35-44"
+            updateAgeButtonStyles(binding.age3544)
+        }
+        binding.age45Plus.setOnClickListener {
+            selectedAge = "45+"
+            updateAgeButtonStyles(binding.age45Plus)
+        }
+    }
+
+    private fun resetAgeButtonStyles() {
+        binding.age1824.setBackgroundResource(R.drawable.field_border_background)
+        binding.age2534.setBackgroundResource(R.drawable.field_border_background)
+        binding.age3544.setBackgroundResource(R.drawable.field_border_background)
+        binding.age45Plus.setBackgroundResource(R.drawable.field_border_background)
+    }
+
+    private fun updateAgeButtonStyles(selectedButton: View) {
+        resetAgeButtonStyles()
+        selectedButton.setBackgroundResource(R.drawable.selected_border_background)
     }
 
     private fun openFileChooser() {
@@ -92,7 +136,7 @@ class UserDataFragment : Fragment() {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream)
             val imageBytes: ByteArray = outputStream.toByteArray()
             imageBase64 = Base64.encodeToString(imageBytes, Base64.DEFAULT)
-            Log.d("UserDataFragment", "Image converted to successfully!")
+            Log.d("UserDataFragment", "Image converted successfully!")
         } catch (e: Exception) {
             Log.e("UserDataFragment", "Error converting image: ${e.message}", e)
             Toast.makeText(requireContext(), "Error converting image: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -110,19 +154,17 @@ class UserDataFragment : Fragment() {
 
     private fun saveUserData() {
         val username = binding.usernamebox.text.toString().trim()
-        val age = binding.ageSpinner.selectedItem.toString()
-        val gender = binding.genderSpinner.selectedItem.toString()
         val height = binding.heightbox.text.toString().trim()
         val weight = binding.weightbox.text.toString().trim()
 
-        if (username.isNotEmpty() && age != "Choose your age" && gender != "Choose your gender" && height.isNotEmpty() && weight.isNotEmpty()) {
+        if (username.isNotEmpty() && selectedAge != null && selectedGender != null && height.isNotEmpty() && weight.isNotEmpty()) {
             val userId = firebaseAuth.currentUser?.uid
             if (userId != null) {
                 val userMap = mapOf(
                     "image" to imageBase64,
                     "username" to username,
-                    "age" to age,
-                    "gender" to gender,
+                    "age" to selectedAge,
+                    "gender" to selectedGender,
                     "height" to height,
                     "weight" to weight
                 )
