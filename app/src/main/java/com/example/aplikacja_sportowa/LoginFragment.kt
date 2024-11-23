@@ -28,7 +28,7 @@ class LoginFragment : Fragment() {
         biometricAuthenticator = BiometricAuthenticator(requireActivity())
 
         binding.textView.setOnClickListener {
-            val fragment = RegisterFragment()
+            val fragment = UserDataFragment()
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)

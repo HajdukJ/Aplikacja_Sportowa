@@ -16,17 +16,12 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.example.aplikacja_sportowa.databinding.FragmentUserDataBinding
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 class UserDataFragment : Fragment() {
 
     private lateinit var binding: FragmentUserDataBinding
-    private lateinit var firebaseAuth: FirebaseAuth
-    private lateinit var database: DatabaseReference
 
     private var imageUri: Uri? = null
     private var imageBase64: String? = null
@@ -40,14 +35,12 @@ class UserDataFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentUserDataBinding.inflate(inflater, container, false)
-        firebaseAuth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance().getReference("Users")
 
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             Toast.makeText(requireContext(), "Upload your data first!", Toast.LENGTH_SHORT).show()
         }
 
-        binding.button.setOnClickListener { saveUserData() }
+        binding.button.setOnClickListener { navigateToRegisterFragment() }
         binding.profileImageView.setOnClickListener { openFileChooser() }
 
         setupGenderSelection()
@@ -152,43 +145,30 @@ class UserDataFragment : Fragment() {
         }
     }
 
-    private fun saveUserData() {
+    private fun navigateToRegisterFragment() {
         val username = binding.usernamebox.text.toString().trim()
         val height = binding.heightbox.text.toString().trim()
         val weight = binding.weightbox.text.toString().trim()
 
         if (username.isNotEmpty() && selectedAge != null && selectedGender != null && height.isNotEmpty() && weight.isNotEmpty()) {
-            val userId = firebaseAuth.currentUser?.uid
-            if (userId != null) {
-                val userMap = mapOf(
-                    "image" to imageBase64,
-                    "username" to username,
-                    "age" to selectedAge,
-                    "gender" to selectedGender,
-                    "height" to height,
-                    "weight" to weight
-                )
-
-                database.child(userId).setValue(userMap).addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        Toast.makeText(requireContext(), "User data saved successfully!", Toast.LENGTH_SHORT).show()
-                        navigateToLoginFragment()
-                    } else {
-                        Toast.makeText(requireContext(), "Error saving user data: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            } else {
-                Toast.makeText(requireContext(), "User is not logged in", Toast.LENGTH_SHORT).show()
+            val bundle = Bundle().apply {
+                putString("username", username)
+                putString("age", selectedAge)
+                putString("gender", selectedGender)
+                putString("height", height)
+                putString("weight", weight)
+                putString("image", imageBase64)
             }
+            val fragment = RegisterFragment().apply {
+                arguments = bundle
+            }
+            requireActivity().supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit()
+            Toast.makeText(requireContext(), "Successfully saved your data", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(requireContext(), "Empty areas are not allowed", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private fun navigateToLoginFragment() {
-        val fragment = LoginFragment()
-        requireActivity().supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
     }
 }
