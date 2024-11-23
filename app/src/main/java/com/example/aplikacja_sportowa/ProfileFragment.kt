@@ -29,6 +29,7 @@ class ProfileFragment : Fragment() {
     private lateinit var weightTextView: TextView
     private lateinit var profileImageView: ImageView
     private lateinit var deleteAccountButton: Button
+    private lateinit var editAccountButton: Button
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,11 +45,16 @@ class ProfileFragment : Fragment() {
         weightTextView = view.findViewById(R.id.weightTextView)
         profileImageView = view.findViewById(R.id.profileImageView)
         deleteAccountButton = view.findViewById(R.id.deleteAccount)
+        editAccountButton = view.findViewById(R.id.editButton)
 
         firebaseAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("Users")
 
         loadUserData()
+
+        editAccountButton.setOnClickListener {
+            navigateToEditAccountFragment()
+        }
 
         deleteAccountButton.setOnClickListener {
             showDeleteAccountDialog()
@@ -92,17 +98,20 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    private fun navigateToEditAccountFragment() {
+        val editAccountFragment = EditAccountFragment()
+        val transaction = requireActivity().supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.fragment_container, editAccountFragment)
+        transaction.addToBackStack(null)
+        transaction.commit()
+    }
+
     private fun showDeleteAccountDialog() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setMessage("Do you want to delete your account?")
             .setCancelable(false)
-            .setNegativeButton("Cancel") { dialog, id ->
-                dialog.dismiss()
-            }
-            .setPositiveButton("Delete") { dialog, id ->
-                deleteUserAccount()
-            }
-
+            .setNegativeButton("Cancel") { dialog, id -> dialog.dismiss() }
+            .setPositiveButton("Delete") { dialog, id -> deleteUserAccount() }
         val alert = builder.create()
         alert.show()
     }
@@ -111,7 +120,6 @@ class ProfileFragment : Fragment() {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
             val userId = currentUser.uid
-
             database.child(userId).removeValue().addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     currentUser.delete().addOnCompleteListener { deleteTask ->
@@ -134,9 +142,7 @@ class ProfileFragment : Fragment() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setMessage(message)
             .setCancelable(false)
-            .setPositiveButton("OK") { dialog, id ->
-                dialog.dismiss()
-            }
+            .setPositiveButton("OK") { dialog, id -> dialog.dismiss() }
         val alert = builder.create()
         alert.show()
     }

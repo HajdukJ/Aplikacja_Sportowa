@@ -85,7 +85,7 @@
             android:id="@+id/heightbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Your Height"
+            android:hint="Enter Your Height (cm)"
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -103,7 +103,7 @@
             android:id="@+id/weightbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Your Weight"
+            android:hint="Enter Your Weight (kg)"
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
