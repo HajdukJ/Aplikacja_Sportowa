@@ -28,7 +28,7 @@
         android:layout_width="120dp"
         android:layout_height="120dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="130dp"
+        android:layout_marginTop="110dp"
         android:clickable="true"
         android:onClick="onProfileImageClick"
         android:scaleType="centerCrop"
@@ -85,7 +85,7 @@
             android:id="@+id/heightbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Your Height"
+            android:hint="Enter Your Height (cm)"
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -103,7 +103,7 @@
             android:id="@+id/weightbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Your Weight"
+            android:hint="Enter Your Weight (kg)"
             android:inputType="numberDecimal" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -111,7 +111,7 @@
         android:id="@+id/genderLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:layout_marginHorizontal="16dp"
         android:text="- - - - Choose your Gender - - - -"
         android:textSize="18sp"
@@ -159,7 +159,7 @@
         android:id="@+id/ageLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="10dp"
         android:layout_marginHorizontal="16dp"
         android:text="- - - - Choose your Age - - - -"
         android:textSize="18sp"
@@ -232,7 +232,7 @@
         android:layout_marginTop="-24dp"
         android:layout_marginHorizontal="140dp"
         android:background="@drawable/rounded_corners"
-        android:text="Create account"
+        android:text="Next"
         android:textColor="@color/white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"

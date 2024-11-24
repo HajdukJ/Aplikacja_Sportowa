@@ -8,6 +8,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.aplikacja_sportowa.databinding.FragmentRegisterBinding
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class RegisterFragment : Fragment() {
 
@@ -22,14 +23,6 @@ class RegisterFragment : Fragment() {
         binding = FragmentRegisterBinding.inflate(inflater, container, false)
         firebaseAuth = FirebaseAuth.getInstance()
         biometricAuthenticator = BiometricAuthenticator(requireActivity())
-
-        binding.textView.setOnClickListener {
-            val fragment = LoginFragment()
-            requireActivity().supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit()
-        }
 
         binding.button.setOnClickListener {
             val email = binding.emailbox.text.toString().trim()
@@ -76,21 +69,53 @@ class RegisterFragment : Fragment() {
         firebaseAuth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    val userId = firebaseAuth.currentUser?.uid
                     val sharedPrefs = requireActivity().getSharedPreferences("BiometricPrefs", 0)
+
                     if (useFingerprint) {
                         sharedPrefs.edit().putString("fingerprint_user", email).apply()
                     }
 
-                    showToast("Account created successfully!")
-                    navigateToUserDataFragment()
+                    val username = arguments?.getString("username") ?: "Unknown"
+                    val age = arguments?.getString("age") ?: "Unknown"
+                    val gender = arguments?.getString("gender") ?: "Unknown"
+                    val height = arguments?.getString("height") ?: "Unknown"
+                    val weight = arguments?.getString("weight") ?: "Unknown"
+                    val image = arguments?.getString("image") ?: ""
+
+                    userId?.let {
+                        val userData = hashMapOf(
+                            "email" to email,
+                            "password" to password,
+                            "fingerprint" to if (useFingerprint) "enabled" else "disabled",
+                            "username" to username,
+                            "age" to age,
+                            "gender" to gender,
+                            "height" to height,
+                            "weight" to weight,
+                            "image" to image
+                        )
+
+                        FirebaseDatabase.getInstance().getReference("Users")
+                            .child(it)
+                            .setValue(userData)
+                            .addOnCompleteListener { dbTask ->
+                                if (dbTask.isSuccessful) {
+                                    showToast("Account created successfully!")
+                                    navigateToLoginFragment()
+                                } else {
+                                    showToast("Error saving user data: ${dbTask.exception?.message}")
+                                }
+                            }
+                    }
                 } else {
                     showToast(task.exception?.message ?: "Error creating account!")
                 }
             }
     }
 
-    private fun navigateToUserDataFragment() {
-        val fragment = UserDataFragment()
+    private fun navigateToLoginFragment() {
+        val fragment = LoginFragment()
         requireActivity().supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .addToBackStack(null)
