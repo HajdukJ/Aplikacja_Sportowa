@@ -16,53 +16,109 @@ class LoginFragment : Fragment() {
 
     private lateinit var binding: FragmentLoginBinding
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var biometricAuthenticator: BiometricAuthenticator
+    private var isBiometricAuthCompleted = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        // Łączenie widoku z kodem.
+    ): View {
         binding = FragmentLoginBinding.inflate(inflater, container, false)
-        // Inicjalizacja Firebase.
         firebaseAuth = FirebaseAuth.getInstance()
-        // Przenosi do ekranu rejestracji po kliknięciu na przycisk.
+        biometricAuthenticator = BiometricAuthenticator(requireActivity())
+
         binding.textView.setOnClickListener {
-            val fragment = RegisterFragment()
+            val fragment = UserDataFragment()
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit()
         }
-        // Funkcja odpowiadająca za obsługę przycisku logowania.
+
         binding.button.setOnClickListener {
-            val email = binding.emailbox.text.toString().trim() // Pobranie email'u.
-            val password = binding.passwordbox.text.toString().trim() // Pobranie hasła.
-            // Sprawdzenie, czy pola nie są puste.
+            val email = binding.emailbox.text.toString().trim()
+            val password = binding.passwordbox.text.toString().trim()
+
             if (email.isNotEmpty() && password.isNotEmpty()) {
-                // Próba logowania się email'em oraz hasłem.
                 firebaseAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            // Logowanie powiodło się, przejście do MainActivity.
-                            val intent = Intent(requireContext(), MainActivity::class.java)
-                            startActivity(intent)
-                            requireActivity().finish()
+                            handleFingerprintLogin(email)
                         } else {
-                            // Sprawdzenie błędów podczas logowania się przez użytkownika.
-                            val errorMessage = when (task.exception) {
-                                is FirebaseAuthInvalidUserException -> "No user found with this email address."
-                                is FirebaseAuthInvalidCredentialsException -> "Password incorrect!"
-                                else -> "Login failed: ${task.exception?.localizedMessage ?: "Unknown error"}"
+                            val exception = task.exception
+                            when (exception) {
+                                is FirebaseAuthInvalidUserException -> {
+                                    showToast("No account found with this email")
+                                }
+                                is FirebaseAuthInvalidCredentialsException -> {
+                                    showToast("Incorrect password")
+                                }
+                                else -> {
+                                    showToast(exception?.localizedMessage ?: "Login failed")
+                                }
                             }
-                            // Wyświetla komunikat o błędzie.
-                            Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_SHORT).show()
                         }
                     }
             } else {
-                // Komunikat o tym, iż pola są puste.
-                Toast.makeText(requireContext(), "Empty areas are not allowed!", Toast.LENGTH_SHORT).show()
+                showToast("Empty areas are not allowed!")
             }
         }
-        return binding.root // Zwrócenie widoku fragmentu.
+
+        return binding.root
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!isBiometricAuthCompleted) {
+            firebaseAuth.signOut()
+        }
+    }
+
+    private fun handleFingerprintLogin(email: String) {
+        val sharedPrefs = requireActivity().getSharedPreferences("BiometricPrefs", 0)
+        val storedEmail = sharedPrefs.getString("fingerprint_user", null)
+
+        if (email == storedEmail) {
+            biometricAuthenticator.promptBiometricAuth(
+                title = "Login",
+                subTitle = "Authenticate with your fingerprint",
+                negativeButtonText = "Cancel",
+                onSuccess = {
+                    isBiometricAuthCompleted = true
+                    navigateToMainActivity()
+                },
+                onError = { _, errorString ->
+                    isBiometricAuthCompleted = false
+                    showToast("Error with fingerprint: $errorString")
+                    logoutUser()
+                },
+                onFailed = {
+                    isBiometricAuthCompleted = false
+                    showToast("Invalid fingerprint. Try again.")
+                    logoutUser()
+                }
+            )
+        } else {
+            isBiometricAuthCompleted = true
+            navigateToMainActivity()
+        }
+    }
+
+    private fun logoutUser() {
+        firebaseAuth.signOut()
+        showToast("Logged out for security reasons.")
+        requireActivity().supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, LoginFragment())
+            .commit()
+    }
+
+    private fun navigateToMainActivity() {
+        val intent = Intent(requireContext(), MainActivity::class.java)
+        startActivity(intent)
+        requireActivity().finish()
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }

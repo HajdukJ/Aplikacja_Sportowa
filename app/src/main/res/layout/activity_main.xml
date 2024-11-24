@@ -14,14 +14,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
+
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:id="@+id/toolbar"
             android:elevation="4dp"
-            android:background="@color/blue"
+            android:background="@drawable/gradient_background"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -37,7 +39,5 @@
         app:menu="@menu/nav_menu"
         app:itemIconTint="@color/blue"
         app:itemTextColor="@color/blue"/>
-
-    
 
 </androidx.drawerlayout.widget.DrawerLayout>
