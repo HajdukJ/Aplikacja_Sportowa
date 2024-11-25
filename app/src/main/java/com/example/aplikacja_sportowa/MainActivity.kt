@@ -118,14 +118,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 title = "Profile"
                 supportActionBar?.show()
             }
-            R.id.nav_run -> {
-                replaceFragment(RunFragment())
-                title = "Run"
-                supportActionBar?.show()
-            }
             R.id.nav_activity -> {
                 replaceFragment(ActivityFragment())
                 title = "Activity"
+                supportActionBar?.show()
+            }
+            R.id.nav_statistics -> {
+                replaceFragment(StatisticsFragment())
+                title = "Statistics"
                 supportActionBar?.show()
             }
             R.id.nav_settings -> {
