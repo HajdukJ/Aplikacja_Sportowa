@@ -1,6 +1,7 @@
 [versions]
 agp = "8.6.0"
 kotlin = "1.9.0"
+mapsSecret = "2.0.1"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -8,6 +9,7 @@ espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
 activity = "1.9.3"
+googleMaps = "17.0.0"
 constraintlayout = "2.1.4"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.1.0"
@@ -16,6 +18,7 @@ firebaseDatabaseKtx = "21.0.0"
 firebaseStorageKtx = "21.0.1"
 picasso = "2.8"
 glide = "4.15.1"
+playServicesLocation = "21.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,8 +35,11 @@ firebase-database-ktx = { group = "com.google.firebase", name = "firebase-databa
 firebase-storage-ktx = { group = "com.google.firebase", name = "firebase-storage-ktx", version.ref = "firebaseStorageKtx" }
 picasso = { group = "com.squareup.picasso", name = "picasso", version.ref = "picasso" }
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
+google-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "googleMaps" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 google-gms-google-services = { id = "com.google.gms.google-services", version.ref = "googleGmsGoogleServices" }
+map-secret = { id = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin", version.ref = "mapsSecret" }
