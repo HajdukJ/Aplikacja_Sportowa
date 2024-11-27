@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.map.secret)
 }
 
 android {
@@ -51,6 +52,8 @@ dependencies {
     implementation(libs.firebase.storage.ktx)
     implementation(libs.picasso)
     implementation(libs.glide)
+    implementation(libs.google.maps)
+    implementation(libs.play.services.location)
     annotationProcessor("com.github.bumptech.glide:compiler:4.15.1")
 
     testImplementation(libs.junit)
