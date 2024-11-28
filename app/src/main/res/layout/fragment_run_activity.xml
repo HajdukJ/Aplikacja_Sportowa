@@ -22,7 +22,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="DISTANCE:\n14 km"
+            android:text="DISTANCE:\n0.00 km"
             android:textSize="18sp"
             android:textStyle="bold"
             android:gravity="center"
@@ -33,18 +33,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="TIME:\n00:27:58"
+            android:text="TIME:\n00:00:00 sec"
             android:textStyle="bold"
             android:textSize="18sp"
             android:gravity="center"
             android:textColor="@color/blue" />
 
         <TextView
-            android:id="@+id/speedLayout"
+            android:id="@+id/paceLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="SPEED:\n7 km/h"
+            android:text="PACE:\n00:00 km/h"
             android:textStyle="bold"
             android:textSize="18sp"
             android:gravity="center"
@@ -78,5 +78,40 @@
         app:layout_constraintVertical_bias="0.5"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="0dp" />
+
+    <LinearLayout
+        android:id="@+id/startFinishButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:weightSum="2">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/startButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="100dp"
+            android:background="@drawable/rounded_border_background"
+            android:backgroundTint="@color/blue"
+            android:text="START"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/finishButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="100dp"
+            android:background="@drawable/rounded_border_background"
+            android:backgroundTint="@color/white"
+            android:text="FINISH"
+            android:textColor="@color/blue"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
