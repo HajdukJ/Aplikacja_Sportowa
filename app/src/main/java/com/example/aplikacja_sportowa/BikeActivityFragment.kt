@@ -200,7 +200,7 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         }
 
         view?.findViewById<TextView>(R.id.timeLayout)?.text = String.format(
-            "TIME:\n%02d:%02d:%02d", totalTimeInSeconds / 3600, (totalTimeInSeconds % 3600) / 60, totalTimeInSeconds % 60
+            "TIME:\n%02d:%02d:%02d sec", totalTimeInSeconds / 3600, (totalTimeInSeconds % 3600) / 60, totalTimeInSeconds % 60
         )
         view?.findViewById<TextView>(R.id.distanceLayout)?.text = String.format(
             "DISTANCE:\n%.2f km", totalDistanceInKm
