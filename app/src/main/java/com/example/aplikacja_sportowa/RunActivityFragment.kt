@@ -23,19 +23,17 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
-import android.graphics.Color
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 
 class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener {
     private var googleMap: GoogleMap? = null
@@ -50,13 +48,13 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
     private var polyline: Polyline? = null
     private val locList = mutableListOf<LatLng>()
     private var isCountingDown = false
+    private var lastPace: String = "00:00"
     private lateinit var sensorManager: SensorManager
     private var stepSensor: Sensor? = null
     private var stepsCount = 0
     private lateinit var notificationManager: NotificationManager
     private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "step_counter_channel"
-    private var lastPace: String = "00:00"
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
@@ -73,23 +71,12 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         mapFragment?.getMapAsync(this)
         startButton = rootView.findViewById(R.id.startButton)
         finishButton = rootView.findViewById(R.id.finishButton)
-
-        startButton.setOnClickListener {
-            onStartClick()
-        }
-
-        finishButton.setOnClickListener {
-            onFinishClick()
-        }
-
-        sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
-
-        notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        createNotificationChannel()
-
         startButton.setOnClickListener { onStartClick() }
         finishButton.setOnClickListener { onFinishClick() }
+        sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        createNotificationChannel()
         return rootView
     }
 
@@ -135,9 +122,8 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         if (isRunning) {
             isRunning = false
             stopLocationUpdates()
-            showFinalStats()
-            stopStepCounting()
             saveRunDataToFirebase()
+            stopStepCounting()
         }
     }
 
@@ -291,7 +277,5 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
             }
         }
     }
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
