@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.*
@@ -21,6 +22,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import android.graphics.Color
 
 class BikeActivityFragment : Fragment(), OnMapReadyCallback {
@@ -33,14 +36,14 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
     private var startTime: Long = 0
     private var distanceTraveled: Float = 0f
     private var lastLocation: Location? = null
-    private val polylineOptions = PolylineOptions().color(Color.MAGENTA).width(15f)
+    private val polylineOptions = PolylineOptions().color(Color.CYAN).width(15f)
     private var polyline: Polyline? = null
     private val locList = mutableListOf<LatLng>()
     private var isCountingDown = false
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        private const val DEFAULT_ZOOM = 15f
+        private const val DEFAULT_ZOOM = 17f
     }
 
     override fun onCreateView(
@@ -115,7 +118,7 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         if (isRiding) {
             isRiding = false
             stopLocationUpdates()
-            showFinalStats()
+            saveCyclingDataToFirebase()
         }
     }
 
@@ -161,12 +164,9 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
     private fun updateLocation(location: Location) {
         if (lastLocation != null) {
             locList.add(LatLng(location.latitude, location.longitude))
-
             polyline?.points = locList
             distanceTraveled += lastLocation!!.distanceTo(location)
-
             val timeElapsed = (System.currentTimeMillis() - startTime) / 1000
-
             view?.findViewById<TextView>(R.id.timeLayout)?.text = String.format(
                 "TIME:\n%02d:%02d:%02d sec",
                 timeElapsed / 3600,
@@ -176,38 +176,36 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
             view?.findViewById<TextView>(R.id.distanceLayout)?.text = String.format(
                 "DISTANCE:\n%.2f km", distanceTraveled / 1000
             )
-
             val speed = location.speed * 3.6f
             view?.findViewById<TextView>(R.id.speedLayout)?.text = String.format(
                 "SPEED:\n%.2f km/h", speed
             )
         }
         lastLocation = location
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
     }
 
     private fun stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(object : LocationCallback() {})
     }
 
-    private fun showFinalStats() {
-        val totalTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000
-        val totalDistanceInKm = distanceTraveled / 1000
-
-        val totalSpeed = if (totalTimeInSeconds > 0) {
-            totalDistanceInKm / (totalTimeInSeconds / 3600f)
-        } else {
-            0f
-        }
-
-        view?.findViewById<TextView>(R.id.timeLayout)?.text = String.format(
-            "TIME:\n%02d:%02d:%02d sec", totalTimeInSeconds / 3600, (totalTimeInSeconds % 3600) / 60, totalTimeInSeconds % 60
+    private fun saveCyclingDataToFirebase() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val databaseReference = FirebaseDatabase.getInstance().getReference("users/${currentUser?.uid}/cycling")
+        val cyclingData = mapOf(
+            "date" to System.currentTimeMillis(),
+            "distance" to distanceTraveled / 1000,
+            "time" to (System.currentTimeMillis() - startTime) / 1000,
+            "speed" to distanceTraveled / (System.currentTimeMillis() - startTime) * 3600f,
+            "route" to locList.map { mapOf("lat" to it.latitude, "lng" to it.longitude) }
         )
-        view?.findViewById<TextView>(R.id.distanceLayout)?.text = String.format(
-            "DISTANCE:\n%.2f km", totalDistanceInKm
-        )
-        view?.findViewById<TextView>(R.id.speedLayout)?.text = String.format(
-            "SPEED:\n%.2f km/h", totalSpeed
-        )
+        databaseReference.push().setValue(cyclingData)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Cycling data saved to Firebase", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { error ->
+                Toast.makeText(requireContext(), "Failed to save cycling data: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun resetActivity(clearPolyline: Boolean = false) {
@@ -226,10 +224,8 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                enableUserLocation()
-            }
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            enableUserLocation()
         }
     }
 }

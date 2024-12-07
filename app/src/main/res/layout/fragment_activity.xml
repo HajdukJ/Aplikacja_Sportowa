@@ -72,7 +72,7 @@
             <ImageView
                 android:layout_width="140dp"
                 android:layout_height="140dp"
-                android:src="@drawable/baseline_directions_bike_24"
+                android:src="@drawable/bike_24"
                 android:layout_gravity="center" />
         </FrameLayout>
 
