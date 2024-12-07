@@ -43,7 +43,7 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        private const val DEFAULT_ZOOM = 15f
+        private const val DEFAULT_ZOOM = 17f
     }
 
     override fun onCreateView(
@@ -182,6 +182,7 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
             )
         }
         lastLocation = location
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
     }
 
     private fun stopLocationUpdates() {
