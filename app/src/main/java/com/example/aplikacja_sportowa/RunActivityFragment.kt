@@ -44,7 +44,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
     private var startTime: Long = 0
     private var distanceTraveled: Float = 0f
     private var lastLocation: Location? = null
-    private val polylineOptions = PolylineOptions().color(Color.MAGENTA).width(15f)
+    private val polylineOptions = PolylineOptions().color(Color.CYAN).width(15f)
     private var polyline: Polyline? = null
     private val locList = mutableListOf<LatLng>()
     private var isCountingDown = false
@@ -58,7 +58,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        private const val DEFAULT_ZOOM = 15f
+        private const val DEFAULT_ZOOM = 17f
     }
 
     override fun onCreateView(
@@ -180,6 +180,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
             view?.findViewById<TextView>(R.id.paceLayout)?.text = String.format("PACE:\n%s min/km", runningPace)
         }
         lastLocation = location
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
     }
 
     private fun calculatePace(distance: Float, time: Long): String {
@@ -277,5 +278,6 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
             }
         }
     }
+
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
