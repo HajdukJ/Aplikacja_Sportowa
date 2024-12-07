@@ -2,6 +2,7 @@ package com.example.aplikacja_sportowa
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
@@ -11,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.location.*
@@ -21,7 +23,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
-import android.graphics.Color
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class RunActivityFragment : Fragment(), OnMapReadyCallback {
 
@@ -37,8 +40,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
     private var polyline: Polyline? = null
     private val locList = mutableListOf<LatLng>()
     private var isCountingDown = false
-
-    private var lastPace: String = "00:00" // przechowuje ostatnie tempo
+    private var lastPace: String = "00:00"
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
@@ -50,22 +52,13 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_run_activity, container, false)
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
         val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
         mapFragment?.getMapAsync(this)
-
         startButton = rootView.findViewById(R.id.startButton)
         finishButton = rootView.findViewById(R.id.finishButton)
-
-        startButton.setOnClickListener {
-            onStartClick()
-        }
-
-        finishButton.setOnClickListener {
-            onFinishClick()
-        }
-
+        startButton.setOnClickListener { onStartClick() }
+        finishButton.setOnClickListener { onFinishClick() }
         return rootView
     }
 
@@ -110,7 +103,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
         if (isRunning) {
             isRunning = false
             stopLocationUpdates()
-            showFinalStats()
+            saveRunDataToFirebase()
         }
     }
 
@@ -156,18 +149,14 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
     private fun updateLocation(location: Location) {
         if (lastLocation != null) {
             locList.add(LatLng(location.latitude, location.longitude))
-
             polyline?.points = locList
             distanceTraveled += lastLocation!!.distanceTo(location)
-
             val timeElapsed = (System.currentTimeMillis() - startTime) / 1000
-
             val (hours, minutes, seconds) = convertSecondsToHMSTime(timeElapsed)
             view?.findViewById<TextView>(R.id.timeLayout)?.text = String.format("TIME:\n%02d:%02d:%02d sec", hours, minutes, seconds)
             view?.findViewById<TextView>(R.id.distanceLayout)?.text = String.format("DISTANCE:\n%.2f km", distanceTraveled / 1000)
-
             val runningPace = calculatePace(distanceTraveled, timeElapsed)
-            lastPace = runningPace  // zapisuje to ostatnie tempo
+            lastPace = runningPace
             view?.findViewById<TextView>(R.id.paceLayout)?.text = String.format("PACE:\n%s min/km", runningPace)
         }
         lastLocation = location
@@ -194,38 +183,33 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
         fusedLocationClient.removeLocationUpdates(object : LocationCallback() {})
     }
 
-    private fun showFinalStats() {
-        val totalTimeInSeconds = (System.currentTimeMillis() - startTime) / 1000
-        val totalDistanceInKm = distanceTraveled / 1000
-
-        val totalPace = lastPace // tutaj jest wyswietlane tempo, ktore ostatnio bylo zapisywane (sprawdzic czy dziala dobrze)
-
-        val (hours, minutes, seconds) = convertSecondsToHMSTime(totalTimeInSeconds)
-        view?.findViewById<TextView>(R.id.timeLayout)?.text = String.format("TIME:\n%02d:%02d:%02d sec", hours, minutes, seconds)
-        view?.findViewById<TextView>(R.id.distanceLayout)?.text = String.format("DISTANCE:\n%.2f km", totalDistanceInKm)
-        view?.findViewById<TextView>(R.id.paceLayout)?.text = String.format("PACE:\n%s min/km", totalPace)
-    }
-
-    private fun resetActivity(clearPolyline: Boolean = false) {
-        distanceTraveled = 0f
-        lastLocation = null
-        locList.clear()
-        view?.findViewById<TextView>(R.id.paceLayout)?.text = "PACE:\n00:00 min/km"
-        view?.findViewById<TextView>(R.id.distanceLayout)?.text = "DISTANCE:\n0.00 km"
-        view?.findViewById<TextView>(R.id.timeLayout)?.text = "TIME:\n00:00:00 sec"
-
-        if (clearPolyline) {
-            polyline?.remove()
-            polyline = null
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                enableUserLocation()
+    private fun saveRunDataToFirebase() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val databaseReference = FirebaseDatabase.getInstance().getReference("users/${currentUser?.uid}/runs")
+        val runData = mapOf(
+            "date" to System.currentTimeMillis(),
+            "distance" to distanceTraveled / 1000,
+            "time" to (System.currentTimeMillis() - startTime) / 1000,
+            "pace" to lastPace,
+            "route" to locList.map { mapOf("lat" to it.latitude, "lng" to it.longitude) }
+        )
+        databaseReference.push().setValue(runData)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Run data saved to Firebase", Toast.LENGTH_SHORT).show()
             }
+            .addOnFailureListener { error ->
+                Toast.makeText(requireContext(), "Failed to save run data: ${error.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun resetActivity(clearMap: Boolean) {
+        if (clearMap) {
+            locList.clear()
+            googleMap?.clear()
+            polyline = googleMap?.addPolyline(polylineOptions)
         }
+        distanceTraveled = 0f
+        startTime = 0
+        lastLocation = null
     }
 }
