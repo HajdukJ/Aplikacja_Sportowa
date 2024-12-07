@@ -25,9 +25,17 @@ import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.os.Build
+import androidx.core.app.NotificationCompat
 
-class RunActivityFragment : Fragment(), OnMapReadyCallback {
-
+class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener {
     private var googleMap: GoogleMap? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var startButton: Button
@@ -41,6 +49,12 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
     private val locList = mutableListOf<LatLng>()
     private var isCountingDown = false
     private var lastPace: String = "00:00"
+    private lateinit var sensorManager: SensorManager
+    private var stepSensor: Sensor? = null
+    private var stepsCount = 0
+    private lateinit var notificationManager: NotificationManager
+    private val NOTIFICATION_ID = 1
+    private val CHANNEL_ID = "step_counter_channel"
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
@@ -59,6 +73,10 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
         finishButton = rootView.findViewById(R.id.finishButton)
         startButton.setOnClickListener { onStartClick() }
         finishButton.setOnClickListener { onFinishClick() }
+        sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+        notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        createNotificationChannel()
         return rootView
     }
 
@@ -96,6 +114,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
             polyline = googleMap?.addPolyline(polylineOptions)
             startCountdown()
             startLocationUpdates()
+            startStepCounting()
         }
     }
 
@@ -104,6 +123,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
             isRunning = false
             stopLocationUpdates()
             saveRunDataToFirebase()
+            stopStepCounting()
         }
     }
 
@@ -212,4 +232,50 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback {
         startTime = 0
         lastLocation = null
     }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Step Counter Notifications",
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = "Channel for step counter notifications"
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+
+    private fun startStepCounting() {
+        if (stepSensor != null) {
+            sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
+            updateNotification(stepsCount)
+        }
+    }
+
+    private fun stopStepCounting() {
+        sensorManager.unregisterListener(this)
+        notificationManager.cancel(NOTIFICATION_ID)
+    }
+
+    private fun updateNotification(stepCount: Int) {
+        val notification = NotificationCompat.Builder(requireContext(), CHANNEL_ID)
+            .setContentTitle("Step Counter")
+            .setContentText("Steps: $stepCount")
+            .setSmallIcon(R.drawable.baseline_directions_run_24)
+            .setOngoing(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        event?.let {
+            if (isRunning && it.sensor == stepSensor) {
+                stepsCount = it.values[0].toInt()
+                updateNotification(stepsCount)
+            }
+        }
+    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
