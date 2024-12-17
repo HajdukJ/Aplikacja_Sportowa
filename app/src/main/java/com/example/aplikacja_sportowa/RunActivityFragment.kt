@@ -23,8 +23,6 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
@@ -34,6 +32,12 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+import java.io.File
+import java.io.FileOutputStream
+import android.graphics.Bitmap
+import android.util.Log
 
 class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener {
     private var googleMap: GoogleMap? = null
@@ -48,13 +52,13 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
     private var polyline: Polyline? = null
     private val locList = mutableListOf<LatLng>()
     private var isCountingDown = false
-    private var lastPace: String = "00:00"
     private lateinit var sensorManager: SensorManager
     private var stepSensor: Sensor? = null
     private var stepsCount = 0
     private lateinit var notificationManager: NotificationManager
     private val NOTIFICATION_ID = 1
     private val CHANNEL_ID = "step_counter_channel"
+    private var lastPace: String = "00:00"
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
@@ -71,12 +75,23 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         mapFragment?.getMapAsync(this)
         startButton = rootView.findViewById(R.id.startButton)
         finishButton = rootView.findViewById(R.id.finishButton)
-        startButton.setOnClickListener { onStartClick() }
-        finishButton.setOnClickListener { onFinishClick() }
+
+        startButton.setOnClickListener {
+            onStartClick()
+        }
+
+        finishButton.setOnClickListener {
+            onFinishClick()
+        }
+
         sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
+
         notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
+
+        startButton.setOnClickListener { onStartClick() }
+        finishButton.setOnClickListener { onFinishClick() }
         return rootView
     }
 
@@ -122,8 +137,17 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         if (isRunning) {
             isRunning = false
             stopLocationUpdates()
-            saveRunDataToFirebase()
             stopStepCounting()
+
+            Log.d("RunActivity", "Saving map snapshot...")
+            saveMapSnapshot("run_map_${System.currentTimeMillis()}") { file ->
+                if (file != null) {
+                    Log.d("RunActivity", "Map snapshot saved: ${file.absolutePath}")
+                    saveRunDataToFirebase(file.absolutePath)
+                } else {
+                    Log.e("RunActivity", "Failed to save map snapshot.")
+                }
+            }
         }
     }
 
@@ -204,7 +228,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         fusedLocationClient.removeLocationUpdates(object : LocationCallback() {})
     }
 
-    private fun saveRunDataToFirebase() {
+    private fun saveRunDataToFirebase(mapImagePath: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val databaseReference = FirebaseDatabase.getInstance().getReference("users/${currentUser?.uid}/runs")
         val runData = mapOf(
@@ -212,6 +236,7 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
             "distance" to distanceTraveled / 1000,
             "time" to (System.currentTimeMillis() - startTime) / 1000,
             "pace" to lastPace,
+            "mapImagePath" to mapImagePath,
             "route" to locList.map { mapOf("lat" to it.latitude, "lng" to it.longitude) }
         )
         databaseReference.push().setValue(runData)
@@ -279,5 +304,28 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    private fun saveMapSnapshot(fileName: String, onSaved: (File?) -> Unit) {
+        googleMap?.snapshot { bitmap ->
+            if (bitmap != null) {
+                try {
+                    val file = File(requireContext().getExternalFilesDir(null), "$fileName.png")
+                    val outputStream = FileOutputStream(file)
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+                    outputStream.flush()
+                    outputStream.close()
+                    Toast.makeText(requireContext(), "Mapa zapisana: ${file.absolutePath}", Toast.LENGTH_SHORT).show()
+                    onSaved(file)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    onSaved(null)
+                }
+            } else {
+                onSaved(null)
+            }
+        }
+    }
+
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+    }
 }
