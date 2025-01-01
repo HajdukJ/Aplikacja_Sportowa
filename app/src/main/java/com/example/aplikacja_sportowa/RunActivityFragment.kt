@@ -1,12 +1,15 @@
 package com.example.aplikacja_sportowa
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.graphics.Bitmap
 import android.location.Location
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,21 +26,18 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Polyline
 import com.google.android.gms.maps.model.PolylineOptions
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.content.Context
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
 import java.io.File
 import java.io.FileOutputStream
-import android.graphics.Bitmap
-import android.util.Log
 
 class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener {
     private var googleMap: GoogleMap? = null
@@ -199,9 +199,11 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
             val (hours, minutes, seconds) = convertSecondsToHMSTime(timeElapsed)
             view?.findViewById<TextView>(R.id.timeLayout)?.text = String.format("TIME:\n%02d:%02d:%02d sec", hours, minutes, seconds)
             view?.findViewById<TextView>(R.id.distanceLayout)?.text = String.format("DISTANCE:\n%.2f km", distanceTraveled / 1000)
-            val runningPace = calculatePace(distanceTraveled, timeElapsed)
-            lastPace = runningPace
-            view?.findViewById<TextView>(R.id.paceLayout)?.text = String.format("PACE:\n%s min/km", runningPace)
+            if (distanceTraveled >= 100) {
+                val runningPace = calculatePace(distanceTraveled, timeElapsed)
+                lastPace = runningPace
+                view?.findViewById<TextView>(R.id.paceLayout)?.text = String.format("PACE:\n%s min/km", runningPace)
+            }
         }
         lastLocation = location
         googleMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
@@ -325,7 +327,5 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
-
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-    }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }
