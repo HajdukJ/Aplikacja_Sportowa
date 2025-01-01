@@ -105,9 +105,4 @@ class SettingsFragment : Fragment() {
             requireContext().resources.updateConfiguration(config, requireContext().resources.displayMetrics)
         }
     }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        (activity as AppCompatActivity).supportActionBar?.title = "Settings"
-    }
 }
