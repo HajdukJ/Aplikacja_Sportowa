@@ -2,7 +2,6 @@ package com.example.aplikacja_sportowa
 
 import android.os.Bundle
 import android.util.Base64
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +15,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import android.graphics.BitmapFactory
 import android.widget.Toast
+import android.content.Context
 
 class ProfileFragment : Fragment() {
 
@@ -64,19 +64,72 @@ class ProfileFragment : Fragment() {
     }
 
     private fun loadUserData() {
+        val sharedPreferences = requireContext().getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        val username = sharedPreferences.getString("username", "N/A")
+        val email = sharedPreferences.getString("email", "N/A")
+        val age = sharedPreferences.getString("age", "N/A")
+        val gender = sharedPreferences.getString("gender", "N/A")
+        val height = sharedPreferences.getString("height", "N/A")
+        val weight = sharedPreferences.getString("weight", "N/A")
+
+        usernameTextView.text = "Username: $username"
+        emailTextView.text = "Email: $email"
+        ageTextView.text = "Age: $age"
+        genderTextView.text = "Gender: $gender"
+        heightTextView.text = "Height: $height cm"
+        weightTextView.text = "Weight: $weight kg"
+
+        val profileImageBase64 = sharedPreferences.getString("profileImage", null)
+        if (!profileImageBase64.isNullOrEmpty()) {
+            val imageBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            Glide.with(requireContext())
+                .load(bitmap)
+                .circleCrop()
+                .into(profileImageView)
+        } else {
+            profileImageView.setImageResource(R.drawable.logo_aplikacja)
+        }
+
+        if (firebaseAuth.currentUser != null) {
+            loadDataFromFirebase()
+        }
+    }
+
+    private fun loadDataFromFirebase() {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
             val userId = currentUser.uid
             database.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                    usernameTextView.text = "Username: ${snapshot.child("username").value.toString() ?: "N/A"}"
-                    emailTextView.text = "Email: ${currentUser.email ?: "N/A"}"
-                    ageTextView.text = "Age: ${snapshot.child("age").value.toString() ?: "N/A"}"
-                    genderTextView.text = "Gender: ${snapshot.child("gender").value.toString() ?: "N/A"}"
-                    heightTextView.text = "Height: ${snapshot.child("height").value.toString() ?: "N/A"} cm"
-                    weightTextView.text = "Weight: ${snapshot.child("weight").value.toString() ?: "N/A"} kg"
-
+                    val username = snapshot.child("username").value.toString()
+                    val email = currentUser.email
+                    val age = snapshot.child("age").value.toString()
+                    val gender = snapshot.child("gender").value.toString()
+                    val height = snapshot.child("height").value.toString()
+                    val weight = snapshot.child("weight").value.toString()
                     val profileImageBase64 = snapshot.child("image").value?.toString()
+
+                    val sharedPreferences = requireContext().getSharedPreferences("UserData", Context.MODE_PRIVATE)
+                    val editor = sharedPreferences.edit()
+                    editor.putString("username", username)
+                    editor.putString("email", email)
+                    editor.putString("age", age)
+                    editor.putString("gender", gender)
+                    editor.putString("height", height)
+                    editor.putString("weight", weight)
+                    if (!profileImageBase64.isNullOrEmpty()) {
+                        editor.putString("profileImage", profileImageBase64)
+                    }
+                    editor.apply()
+
+                    usernameTextView.text = "Username: $username"
+                    emailTextView.text = "Email: $email"
+                    ageTextView.text = "Age: $age"
+                    genderTextView.text = "Gender: $gender"
+                    heightTextView.text = "Height: $height cm"
+                    weightTextView.text = "Weight: $weight kg"
+
                     if (!profileImageBase64.isNullOrEmpty()) {
                         val imageBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)
                         val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
@@ -84,17 +137,13 @@ class ProfileFragment : Fragment() {
                             .load(bitmap)
                             .circleCrop()
                             .into(profileImageView)
-                    } else {
-                        profileImageView.setImageResource(R.drawable.logo_aplikacja)
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    usernameTextView.text = "Error loading data"
+                    Toast.makeText(requireContext(), "Error loading data", Toast.LENGTH_SHORT).show()
                 }
             })
-        } else {
-            usernameTextView.text = "User not logged in"
         }
     }
 
@@ -148,8 +197,6 @@ class ProfileFragment : Fragment() {
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).apply {
-            setGravity(Gravity.BOTTOM, 0, 100)
-        }.show()
+        Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }
 }

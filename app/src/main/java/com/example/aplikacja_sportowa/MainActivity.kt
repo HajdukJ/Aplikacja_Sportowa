@@ -17,6 +17,7 @@ import com.bumptech.glide.Glide
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import android.content.Context
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
@@ -74,6 +75,31 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun loadUserData() {
+        val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
+        val storedUserName = sharedPreferences.getString("username", "Unknown User")
+        val storedUserEmail = sharedPreferences.getString("email", "Unknown Email")
+        val storedImageBase64 = sharedPreferences.getString("profileImage", null)
+
+        userName.text = storedUserName
+        userEmail.text = storedUserEmail
+
+        if (!storedImageBase64.isNullOrEmpty()) {
+            val imageBytes = Base64.decode(storedImageBase64, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
+            Glide.with(this@MainActivity)
+                .load(bitmap)
+                .circleCrop()
+                .into(userProfileImage)
+        } else {
+            userProfileImage.setImageResource(R.drawable.logo_aplikacja)
+        }
+
+        if (firebaseAuth.currentUser != null) {
+            loadDataFromFirebase()
+        }
+    }
+
+    private fun loadDataFromFirebase() {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
             val userId = currentUser.uid
@@ -82,6 +108,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     val name = snapshot.child("username").value?.toString() ?: "Unknown User"
                     val email = currentUser.email ?: "Unknown Email"
                     val imageBase64 = snapshot.child("image").value?.toString()
+
+                    val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
+                    val editor = sharedPreferences.edit()
+                    editor.putString("username", name)
+                    editor.putString("email", email)
+                    if (!imageBase64.isNullOrEmpty()) {
+                        editor.putString("profileImage", imageBase64)
+                    }
+                    editor.apply()
 
                     userName.text = name
                     userEmail.text = email
@@ -93,14 +128,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                             .load(bitmap)
                             .circleCrop()
                             .into(userProfileImage)
-                    } else {
-                        userProfileImage.setImageResource(R.drawable.logo_aplikacja)
                     }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    userName.text = "Error loading data"
-                    userEmail.text = "Error loading email"
+                    Toast.makeText(this@MainActivity, "Error loading data", Toast.LENGTH_SHORT).show()
                 }
             })
         }
