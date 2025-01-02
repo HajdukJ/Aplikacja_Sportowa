@@ -7,19 +7,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Switch
-import android.widget.Spinner
-import android.widget.ArrayAdapter
-import android.widget.AdapterView
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.app.AppCompatActivity
 import java.util.*
 
 class SettingsFragment : Fragment() {
 
     private lateinit var nightModeSwitch: Switch
     private lateinit var languageSpinner: Spinner
+    private lateinit var resetButton: Button
     private lateinit var sharedPreferences: SharedPreferences
     private val NIGHT_MODE_KEY = "night_mode"
     private val LANGUAGE_KEY = "language"
@@ -34,6 +31,7 @@ class SettingsFragment : Fragment() {
 
         nightModeSwitch = view.findViewById(R.id.nightModeSwitch)
         languageSpinner = view.findViewById(R.id.languageSpinner)
+        resetButton = view.findViewById(R.id.resetButton)
 
         val isNightMode = sharedPreferences.getBoolean(NIGHT_MODE_KEY, false)
         nightModeSwitch.isChecked = isNightMode
@@ -55,6 +53,10 @@ class SettingsFragment : Fragment() {
             }
 
             override fun onNothingSelected(parentView: AdapterView<*>?) {}
+        }
+
+        resetButton.setOnClickListener {
+            resetSettings()
         }
 
         return view
@@ -99,10 +101,20 @@ class SettingsFragment : Fragment() {
         val config = Configuration()
         config.setLocale(locale)
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            requireContext().createConfigurationContext(config)
-        } else {
-            requireContext().resources.updateConfiguration(config, requireContext().resources.displayMetrics)
-        }
+        requireContext().resources.updateConfiguration(config, requireContext().resources.displayMetrics)
+    }
+
+    private fun resetSettings() {
+        val editor = sharedPreferences.edit()
+        editor.putBoolean(NIGHT_MODE_KEY, false)
+        editor.putString(LANGUAGE_KEY, "en")
+        editor.apply()
+
+        nightModeSwitch.isChecked = false
+        setTheme(false)
+        languageSpinner.setSelection(0)
+        changeLanguage("en")
+
+        Toast.makeText(requireContext(), "Settings reset to default", Toast.LENGTH_SHORT).show()
     }
 }
