@@ -6,13 +6,121 @@
     android:layout_height="match_parent"
     tools:context=".AboutFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:id="@+id/aboutTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="About us"
-        android:textSize="30sp"
-        android:layout_centerInParent="true"
-        android:textColor="@color/blue"/>
+        android:text="About Us"
+        android:textStyle="bold"
+        android:textSize="28sp"
+        android:textColor="@color/blue"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="60dp"/>
+
+    <TextView
+        android:id="@+id/aboutDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Our app helps you achieve your fitness goals. Track your runs, set goals, use training plans, and motivate yourself for better results. It works for everyone, regardless of skill level!"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_below="@id/aboutTitle"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:justificationMode="inter_word"/>
+
+    <TextView
+        android:id="@+id/aboutTeam"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Team"
+        android:textStyle="bold"
+        android:textSize="28sp"
+        android:textColor="@color/blue"
+        android:layout_below="@id/aboutDescription"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:id="@+id/teamDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="We are a team of programming and sports enthusiasts. Our goal is to create an app that helps you live a more active and healthier life."
+        android:textSize="16sp"
+        android:textColor="@android:color/black"
+        android:textStyle="bold"
+        android:layout_below="@id/aboutTeam"
+        android:layout_marginTop="15dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:justificationMode="inter_word"/>
+
+    <TextView
+        android:id="@+id/contactInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Contact us at: support@runningapp.com"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_below="@id/teamDescription"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:justificationMode="inter_word"/>
+
+    <TextView
+        android:id="@+id/addressInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Address: Ul. Zamenhofa 1a, 33-300 Nowy Sącz"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_below="@id/contactInfo"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:justificationMode="inter_word"/>
+
+    <TextView
+        android:id="@+id/phoneInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Phone: +48 123 456 789"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_below="@id/addressInfo"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:justificationMode="inter_word"/>
+
+    <ImageView
+        android:id="@+id/teamImage"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/logo_aplikacja"
+        android:layout_below="@id/phoneInfo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/thankYouMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thank you for your support! Keep running and achieve your next goals!"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_below="@id/teamImage"
+        android:layout_marginTop="30dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"/>
 
 </RelativeLayout>

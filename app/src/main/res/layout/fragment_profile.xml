@@ -102,6 +102,17 @@
             android:textColor="@color/black"
             android:textSize="16sp" />
 
+        <TextView
+            android:id="@+id/stepsTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/field_border_background"
+            android:padding="10dp"
+            android:text="Steps: "
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -123,7 +134,7 @@
             android:text="Edit Account"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:textSize="14sp" />
+            android:textSize="17sp" />
 
         <Button
             android:id="@+id/deleteAccount"
@@ -136,7 +147,7 @@
             android:text="Delete Account"
             android:textStyle="bold"
             android:textColor="@color/white"
-            android:textSize="14sp" />
+            android:textSize="17sp" />
     </LinearLayout>
 
 </RelativeLayout>

@@ -19,6 +19,10 @@ import com.example.aplikacja_sportowa.databinding.FragmentUserDataBinding
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
+/**
+ * Fragment odpowiedzialny za zbieranie danych użytkownika, takich jak imię, wiek, płeć, wzrost, waga
+ * oraz obrazek profilowy.
+ */
 class UserDataFragment : Fragment() {
 
     private lateinit var binding: FragmentUserDataBinding
@@ -30,12 +34,22 @@ class UserDataFragment : Fragment() {
     private var selectedGender: String? = null
     private var selectedAge: String? = null
 
+    /**
+     * Metoda wywoływana przy tworzeniu widoku fragmentu. Inicjalizuje widok, ustawia nasłuchiwanie na przyciski
+     * oraz umożliwia wybór obrazu profilowego i danych użytkownika.
+     *
+     * @param inflater Obiekt LayoutInflater do układu widoku.
+     * @param container Kontener dla widoku.
+     * @param savedInstanceState Zapisany stan fragmentu.
+     * @return Widok fragmentu.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentUserDataBinding.inflate(inflater, container, false)
 
+        // Obsługuje naciśnięcie przycisku "wstecz" z powiadomieniem
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
             Toast.makeText(requireContext(), "Upload your data first!", Toast.LENGTH_SHORT).show()
         }
@@ -49,6 +63,9 @@ class UserDataFragment : Fragment() {
         return binding.root
     }
 
+    /**
+     * Ustawia logikę wyboru płci. Zawiera funkcje zmieniające wygląd przycisków na podstawie wybranego wyboru.
+     */
     private fun setupGenderSelection() {
         resetGenderButtonStyles()
 
@@ -62,16 +79,27 @@ class UserDataFragment : Fragment() {
         }
     }
 
+    /**
+     * Resetuje style przycisków dla płci.
+     */
     private fun resetGenderButtonStyles() {
         binding.maleButton.setBackgroundResource(R.drawable.field_border_background)
         binding.femaleButton.setBackgroundResource(R.drawable.field_border_background)
     }
 
+    /**
+     * Zmienia styl wybranego przycisku dla płci.
+     *
+     * @param selectedButton Przycisk, który został wybrany.
+     */
     private fun updateGenderButtonStyles(selectedButton: View) {
         resetGenderButtonStyles()
         selectedButton.setBackgroundResource(R.drawable.selected_border_background)
     }
 
+    /**
+     * Ustawia logikę wyboru wieku. Zawiera funkcje zmieniające wygląd przycisków na podstawie wybranego wieku.
+     */
     private fun setupAgeSelection() {
         resetAgeButtonStyles()
 
@@ -93,6 +121,9 @@ class UserDataFragment : Fragment() {
         }
     }
 
+    /**
+     * Resetuje style przycisków dla wieku.
+     */
     private fun resetAgeButtonStyles() {
         binding.age1824.setBackgroundResource(R.drawable.field_border_background)
         binding.age2534.setBackgroundResource(R.drawable.field_border_background)
@@ -100,17 +131,33 @@ class UserDataFragment : Fragment() {
         binding.age45Plus.setBackgroundResource(R.drawable.field_border_background)
     }
 
+    /**
+     * Zmienia styl wybranego przycisku dla wieku.
+     *
+     * @param selectedButton Przycisk, który został wybrany.
+     */
     private fun updateAgeButtonStyles(selectedButton: View) {
         resetAgeButtonStyles()
         selectedButton.setBackgroundResource(R.drawable.selected_border_background)
     }
 
+    /**
+     * Otwiera okno wyboru pliku, aby użytkownik mógł wybrać obrazek z galerii.
+     */
     private fun openFileChooser() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
+    /**
+     * Metoda wywoływana po wybraniu pliku obrazu przez użytkownika.
+     * Ustawia obrazek w widoku i konwertuje go na Base64.
+     *
+     * @param requestCode Kod żądania dla wyboru obrazu.
+     * @param resultCode Kod wyniku operacji.
+     * @param data Dane z wybranego obrazu.
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
@@ -121,6 +168,9 @@ class UserDataFragment : Fragment() {
         }
     }
 
+    /**
+     * Konwertuje wybrany obrazek na format Base64.
+     */
     private fun convertImageToBase64() {
         try {
             val inputStream: InputStream? = imageUri?.let { requireContext().contentResolver.openInputStream(it) }
@@ -136,6 +186,9 @@ class UserDataFragment : Fragment() {
         }
     }
 
+    /**
+     * Ładuje obrazek profilowy w formie okrągłego obrazu do ImageView.
+     */
     private fun loadImageIntoCircle() {
         if (imageUri != null) {
             Glide.with(requireContext())
@@ -145,6 +198,10 @@ class UserDataFragment : Fragment() {
         }
     }
 
+    /**
+     * Nawigacja do fragmentu rejestracji po zapisaniu danych użytkownika.
+     * Przekazuje dane, takie jak imię, wiek, płeć, wzrost, waga i obrazek do fragmentu rejestracji.
+     */
     private fun navigateToRegisterFragment() {
         val username = binding.usernamebox.text.toString().trim()
         val height = binding.heightbox.text.toString().trim()
