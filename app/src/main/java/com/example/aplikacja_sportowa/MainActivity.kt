@@ -51,9 +51,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             setupDrawerToggle(toolbar)
             loadUserData()
             if (savedInstanceState == null) {
-                replaceFragment(HomeFragment())
-                navigationView.setCheckedItem(R.id.nav_home)
-                title = "Home"
+                replaceFragment(ActivityFragment())
+                navigationView.setCheckedItem(R.id.nav_activity)
+                title = "Activity"
             }
         } else {
             replaceFragment(LoginFragment())
@@ -140,11 +140,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.nav_home -> {
-                replaceFragment(HomeFragment())
-                title = "Home"
-                supportActionBar?.show()
-            }
             R.id.nav_profile -> {
                 replaceFragment(ProfileFragment())
                 title = "Profile"
