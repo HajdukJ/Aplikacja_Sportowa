@@ -30,6 +30,7 @@ class ProfileFragment : Fragment() {
     private lateinit var profileImageView: ImageView
     private lateinit var deleteAccountButton: Button
     private lateinit var editAccountButton: Button
+    private lateinit var stepsTextView: TextView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,6 +47,7 @@ class ProfileFragment : Fragment() {
         profileImageView = view.findViewById(R.id.profileImageView)
         deleteAccountButton = view.findViewById(R.id.deleteAccount)
         editAccountButton = view.findViewById(R.id.editButton)
+        stepsTextView = view.findViewById(R.id.stepsTextView)
 
         firebaseAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("Users")
@@ -71,6 +73,7 @@ class ProfileFragment : Fragment() {
         val gender = sharedPreferences.getString("gender", "N/A")
         val height = sharedPreferences.getString("height", "N/A")
         val weight = sharedPreferences.getString("weight", "N/A")
+        val stepCount = sharedPreferences.getString("stepCount", "N/A")
 
         usernameTextView.text = "Username: $username"
         emailTextView.text = "Email: $email"
@@ -78,6 +81,7 @@ class ProfileFragment : Fragment() {
         genderTextView.text = "Gender: $gender"
         heightTextView.text = "Height: $height cm"
         weightTextView.text = "Weight: $weight kg"
+        stepsTextView.text = "Steps: $stepCount"
 
         val profileImageBase64 = sharedPreferences.getString("profileImage", null)
         if (!profileImageBase64.isNullOrEmpty()) {
@@ -108,6 +112,7 @@ class ProfileFragment : Fragment() {
                     val gender = snapshot.child("gender").value.toString()
                     val height = snapshot.child("height").value.toString()
                     val weight = snapshot.child("weight").value.toString()
+                    val stepCount = snapshot.child("stepCount").value.toString()
                     val profileImageBase64 = snapshot.child("image").value?.toString()
 
                     val sharedPreferences = requireContext().getSharedPreferences("UserData", Context.MODE_PRIVATE)
@@ -118,6 +123,7 @@ class ProfileFragment : Fragment() {
                     editor.putString("gender", gender)
                     editor.putString("height", height)
                     editor.putString("weight", weight)
+                    editor.putString("stepCount", stepCount)
                     if (!profileImageBase64.isNullOrEmpty()) {
                         editor.putString("profileImage", profileImageBase64)
                     }
@@ -129,6 +135,7 @@ class ProfileFragment : Fragment() {
                     genderTextView.text = "Gender: $gender"
                     heightTextView.text = "Height: $height cm"
                     weightTextView.text = "Weight: $weight kg"
+                    stepsTextView.text = "Steps: $stepCount"
 
                     if (!profileImageBase64.isNullOrEmpty()) {
                         val imageBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)

@@ -60,9 +60,9 @@ class EditAccountFragment : Fragment() {
             database.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val userData = snapshot.value as? Map<*, *> ?: return
-                    binding.emailbox.setText(userData["email"] as? String ?: "")
                     binding.usernamebox.setText(userData["username"] as? String ?: "")
                     binding.weightbox.setText(userData["weight"] as? String ?: "")
+                    binding.stepsbox.setText(userData["stepcount"] as? String ?: "")
                     val imageBase64 = userData["image"] as? String
                     if (!imageBase64.isNullOrEmpty()) {
                         val imageBytes = Base64.decode(imageBase64, Base64.DEFAULT)
@@ -114,9 +114,9 @@ class EditAccountFragment : Fragment() {
     }
 
     private fun saveUserData() {
-        val email = binding.emailbox.text.toString().trim()
         val username = binding.usernamebox.text.toString().trim()
         val weight = binding.weightbox.text.toString().trim()
+        val stepcount = binding.stepsbox.text.toString().trim()
         val password = binding.passwordbox.text.toString().trim()
         val confirmPassword = binding.confirmpasswordbox.text.toString().trim()
 
@@ -130,9 +130,9 @@ class EditAccountFragment : Fragment() {
             database.child(userId).addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val updates = mutableMapOf<String, Any>()
-                    if (email.isNotEmpty()) updates["email"] = email
                     if (username.isNotEmpty()) updates["username"] = username
                     if (weight.isNotEmpty()) updates["weight"] = weight
+                    if (stepcount.isNotEmpty()) updates["stepcount"] = stepcount
                     if (!imageBase64.isNullOrEmpty()) updates["image"] = imageBase64!!
                     if (password.isNotEmpty()) firebaseAuth.currentUser?.updatePassword(password)
 
