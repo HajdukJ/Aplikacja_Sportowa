@@ -18,27 +18,47 @@ import com.google.firebase.database.*
 import android.Manifest
 import android.content.pm.PackageManager
 
+/**
+ * Fragment, który wyświetla statystyki aktywności użytkownika, takie jak bieganie i jazda na rowerze.
+ * Pobiera dane z bazy danych Firebase i wyświetla je w interfejsie użytkownika.
+ */
 class StatisticsFragment : Fragment() {
 
     private lateinit var statsLayout: LinearLayout
     private lateinit var databaseReference: DatabaseReference
 
+    /**
+     * Tworzy widok fragmentu, inicjalizuje layout, pobiera dane aktywności i sprawdza uprawnienia.
+     *
+     * @param inflater Inflater do tworzenia widoku
+     * @param container Kontener, w którym ma się znaleźć widok
+     * @param savedInstanceState Stan zapisany w poprzedniej instancji
+     * @return Widok fragmentu
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_statistics, container, false)
         statsLayout = rootView.findViewById(R.id.statsLayout)
-        fetchActivityData()
-        checkPermissions()
+        fetchActivityData()  // Pobranie danych aktywności
+        checkPermissions()  // Sprawdzenie uprawnień
         return rootView
     }
 
+    /**
+     * Sprawdza, czy aplikacja ma uprawnienia do odczytu zewnętrznej pamięci.
+     * Jeśli nie, prosi użytkownika o nadanie uprawnień.
+     */
     private fun checkPermissions() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1)
         }
     }
 
+    /**
+     * Pobiera dane aktywności użytkownika z Firebase i wyświetla je w interfejsie.
+     * Obsługuje dwa typy aktywności: bieganie i jazda na rowerze.
+     */
     private fun fetchActivityData() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
@@ -46,12 +66,14 @@ class StatisticsFragment : Fragment() {
             return
         }
 
+        // Referencje do bazy danych Firebase dla biegania i jazdy na rowerze
         val runsReference = FirebaseDatabase.getInstance().getReference("users/${currentUser.uid}/runs")
         val cyclingReference = FirebaseDatabase.getInstance().getReference("users/${currentUser.uid}/cycling")
 
+        // Pobieranie danych biegania
         runsReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                statsLayout.removeAllViews()
+                statsLayout.removeAllViews()  // Usunięcie poprzednich widoków
                 for (child in snapshot.children) {
                     val runData = child.value as? Map<String, Any>
                     if (runData != null) {
@@ -61,7 +83,7 @@ class StatisticsFragment : Fragment() {
                         val pace = runData["pace"] as? String ?: "00:00"
                         val route = runData["route"] as? List<Map<String, Double>> ?: emptyList()
 
-                        // Tworzenie widoku dla danych
+                        // Tworzenie widoku dla danych biegania
                         val runView = createRunView(date, distance, time, pace, route)
                         statsLayout.addView(runView)
                     } else {
@@ -76,6 +98,7 @@ class StatisticsFragment : Fragment() {
             }
         })
 
+        // Pobieranie danych jazdy na rowerze
         cyclingReference.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 for (child in snapshot.children) {
@@ -87,6 +110,7 @@ class StatisticsFragment : Fragment() {
                         val speed = cyclingData["speed"] as? Double ?: 0.0
                         val route = cyclingData["route"] as? List<Map<String, Double>> ?: emptyList()
 
+                        // Tworzenie widoku dla danych jazdy na rowerze
                         val cyclingView = createCyclingView(date, distance, time, speed, route)
                         statsLayout.addView(cyclingView)
                     }
@@ -99,10 +123,26 @@ class StatisticsFragment : Fragment() {
         })
     }
 
+    /**
+     * Formatuje datę z formatu timestamp do formatu "dd/MM/yyyy HH:mm".
+     *
+     * @param timestamp Czas w formacie timestamp
+     * @return Sformatowana data w postaci tekstu
+     */
     private fun formatDate(timestamp: Long): String {
         return java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(timestamp)
     }
 
+    /**
+     * Tworzy widok dla danych biegania.
+     *
+     * @param date Data aktywności
+     * @param distance Przebyty dystans
+     * @param time Czas trwania aktywności
+     * @param pace Tempo biegu
+     * @param route Trasa biegu
+     * @return Widok reprezentujący dane biegania
+     */
     private fun createRunView(date: Long, distance: Double, time: Long, pace: String, route: List<Map<String, Double>>): View {
         val runView = LinearLayout(requireContext())
         runView.orientation = LinearLayout.HORIZONTAL
@@ -130,6 +170,7 @@ class StatisticsFragment : Fragment() {
         )
         textLayout.setPadding(16, 0, 0, 0)
 
+        // Wyświetlanie daty, dystansu, czasu i tempa
         val dateTextView = TextView(requireContext())
         dateTextView.text = "Date: ${formatDate(date)}"
         dateTextView.textSize = 18f
@@ -158,12 +199,11 @@ class StatisticsFragment : Fragment() {
 
         runView.addView(runIcon)
         runView.addView(textLayout)
-        val mapImagePath = "/path/to/your/image"
 
         runView.setOnClickListener {
             val mapImagePath = "/path/to/your/image"
 
-            // Logowanie ścieżki
+            // Ładowanie ścieżki mapy
             Log.d("MapDisplay", "Map image path: $mapImagePath")
 
             if (mapImagePath.isNullOrEmpty()) {
@@ -172,16 +212,24 @@ class StatisticsFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // Przesyłanie intencji
             val intent = Intent(requireContext(), MapDisplayActivity::class.java)
             intent.putExtra("mapImagePath", mapImagePath)
-            Log.d("MapDisplay", "Starting MapDisplayActivity")
             startActivity(intent)
         }
 
         return runView
     }
 
+    /**
+     * Tworzy widok dla danych jazdy na rowerze.
+     *
+     * @param date Data aktywności
+     * @param distance Przebyty dystans
+     * @param time Czas trwania aktywności
+     * @param speed Prędkość jazdy
+     * @param route Trasa jazdy
+     * @return Widok reprezentujący dane jazdy na rowerze
+     */
     private fun createCyclingView(date: Long, distance: Double, time: Long, speed: Double, route: List<Map<String, Double>>): View {
         val cyclingView = LinearLayout(requireContext())
         cyclingView.orientation = LinearLayout.HORIZONTAL
@@ -209,6 +257,7 @@ class StatisticsFragment : Fragment() {
         )
         textLayout.setPadding(16, 0, 0, 0)
 
+        // Wyświetlanie daty, dystansu, czasu i prędkości
         val dateTextView = TextView(requireContext())
         dateTextView.text = "Date: ${formatDate(date)}"
         dateTextView.textSize = 18f
@@ -237,9 +286,12 @@ class StatisticsFragment : Fragment() {
 
         cyclingView.addView(cyclingIcon)
         cyclingView.addView(textLayout)
+
+        // Obsługuje kliknięcie w widok aktywności rowerowej
         cyclingView.setOnClickListener {
             val mapImagePath = "/path/to/your/image"
 
+            // Ładowanie ścieżki mapy
             Log.d("MapDisplay", "Map image path: $mapImagePath")
 
             if (mapImagePath.isNullOrEmpty()) {
