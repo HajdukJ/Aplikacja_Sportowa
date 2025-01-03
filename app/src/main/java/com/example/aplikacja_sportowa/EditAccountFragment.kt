@@ -22,6 +22,11 @@ import com.google.firebase.database.*
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
+/**
+ * Fragment, który umożliwia użytkownikowi edycję swojego profilu.
+ * Użytkownik może zmienić dane, takie jak nazwa użytkownika, waga, liczba kroków
+ * oraz dodać lub zmienić zdjęcie profilowe.
+ */
 class EditAccountFragment : Fragment() {
 
     private lateinit var binding: FragmentEditAccountBinding
@@ -32,6 +37,15 @@ class EditAccountFragment : Fragment() {
     private var imageBase64: String? = null
     private val PICK_IMAGE_REQUEST = 1
 
+    /**
+     * Tworzy widok fragmentu.
+     * Inicjalizuje wszystkie elementy interfejsu użytkownika.
+     *
+     * @param inflater Inflater do tworzenia widoku
+     * @param container Kontener, w którym ma się znaleźć widok
+     * @param savedInstanceState Stan zapisany w poprzedniej instancji
+     * @return Widok fragmentu
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -42,6 +56,7 @@ class EditAccountFragment : Fragment() {
 
         loadUserData()
 
+        // Ustawienie akcji przycisków
         binding.saveSettingsButton.setOnClickListener { saveUserData() }
         binding.profileImageView.setOnClickListener { openFileChooser() }
         binding.cancelButton.setOnClickListener {
@@ -54,6 +69,10 @@ class EditAccountFragment : Fragment() {
         return binding.root
     }
 
+    /**
+     * Ładuje dane użytkownika z bazy danych.
+     * Wyświetla nazwę użytkownika, wagę, liczbę kroków i zdjęcie profilowe.
+     */
     private fun loadUserData() {
         val userId = firebaseAuth.currentUser?.uid
         if (userId != null) {
@@ -81,12 +100,23 @@ class EditAccountFragment : Fragment() {
         }
     }
 
+    /**
+     * Otwiera okno wyboru pliku, aby użytkownik mógł wybrać zdjęcie.
+     */
     private fun openFileChooser() {
         val intent = Intent(Intent.ACTION_PICK)
         intent.type = "image/*"
         startActivityForResult(intent, PICK_IMAGE_REQUEST)
     }
 
+    /**
+     * Obsługuje wynik wyboru pliku (np. zdjęcia).
+     * Ustawia wybrane zdjęcie w widoku oraz konwertuje je na Base64.
+     *
+     * @param requestCode Kod żądania
+     * @param resultCode Kod wyniku
+     * @param data Dane z wybranego pliku
+     */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
@@ -99,6 +129,10 @@ class EditAccountFragment : Fragment() {
         }
     }
 
+    /**
+     * Konwertuje zdjęcie z formatu URI na Base64.
+     * Używane do zapisania zdjęcia w bazie danych.
+     */
     private fun convertImageToBase64() {
         try {
             val inputStream: InputStream? = imageUri?.let { requireContext().contentResolver.openInputStream(it) }
@@ -113,6 +147,10 @@ class EditAccountFragment : Fragment() {
         }
     }
 
+    /**
+     * Zapisuje zaktualizowane dane użytkownika do bazy danych.
+     * Jeśli hasło zostało zmienione, również jest aktualizowane.
+     */
     private fun saveUserData() {
         val username = binding.usernamebox.text.toString().trim()
         val weight = binding.weightbox.text.toString().trim()
@@ -120,6 +158,7 @@ class EditAccountFragment : Fragment() {
         val password = binding.passwordbox.text.toString().trim()
         val confirmPassword = binding.confirmpasswordbox.text.toString().trim()
 
+        // Sprawdzanie, czy hasła pasują
         if (password.isNotEmpty() && password != confirmPassword) {
             Toast.makeText(requireContext(), "Passwords do not match!", Toast.LENGTH_SHORT).show()
             return

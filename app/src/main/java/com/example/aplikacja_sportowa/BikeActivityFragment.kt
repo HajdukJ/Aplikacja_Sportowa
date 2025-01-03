@@ -26,13 +26,21 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import android.graphics.Color
 
+/**
+ * Fragment obsługujący aktywność rowerową z wykorzystaniem Google Maps i lokalizacji.
+ */
 class BikeActivityFragment : Fragment(), OnMapReadyCallback {
 
+    // Google Maps i lokalizacja
     private var googleMap: GoogleMap? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    // Przyciski i stany aktywności
     private lateinit var startButton: Button
     private lateinit var finishButton: Button
     private var isRiding = false
+
+    // Dane dotyczące aktywności
     private var startTime: Long = 0
     private var distanceTraveled: Float = 0f
     private var lastLocation: Location? = null
@@ -46,32 +54,39 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         private const val DEFAULT_ZOOM = 17f
     }
 
+    /**
+     * Tworzenie widoku fragmentu i inicjalizacja elementów interfejsu.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_bike_activity, container, false)
 
+        // Inicjalizacja klienta lokalizacji
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+
+        // Pobranie fragmentu mapy i inicjalizacja mapy
         val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
         mapFragment?.getMapAsync(this)
 
+        // Przypisanie przycisków
         startButton = rootView.findViewById(R.id.startButton)
         finishButton = rootView.findViewById(R.id.finishButton)
 
-        startButton.setOnClickListener {
-            onStartClick()
-        }
-
-        finishButton.setOnClickListener {
-            onFinishClick()
-        }
+        // Ustawienie obsługi kliknięć dla przycisków
+        startButton.setOnClickListener { onStartClick() }
+        finishButton.setOnClickListener { onFinishClick() }
 
         return rootView
     }
 
+    /**
+     * Obsługa mapy po jej załadowaniu.
+     */
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
+        // Sprawdzenie i żądanie uprawnień lokalizacji
         if (ActivityCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -86,6 +101,9 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Włącza lokalizację użytkownika na mapie.
+     */
     private fun enableUserLocation() {
         googleMap?.isMyLocationEnabled = true
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -96,6 +114,9 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Obsługuje rozpoczęcie aktywności rowerowej.
+     */
     private fun onStartClick() {
         if (!isRiding) {
             resetActivity(true)
@@ -104,16 +125,12 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
             polyline = googleMap?.addPolyline(polylineOptions)
             startCountdown()
             startLocationUpdates()
-        } else {
-            resetActivity(true)
-            isRiding = true
-            startTime = System.currentTimeMillis()
-            polyline = googleMap?.addPolyline(polylineOptions)
-            startCountdown()
-            startLocationUpdates()
         }
     }
 
+    /**
+     * Obsługuje zakończenie aktywności rowerowej.
+     */
     private fun onFinishClick() {
         if (isRiding) {
             isRiding = false
@@ -122,6 +139,9 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Wyświetla odliczanie przed rozpoczęciem aktywności.
+     */
     private fun startCountdown() {
         isCountingDown = true
         val countdown = arrayOf(3, 2, 1, "START!")
@@ -142,6 +162,9 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         })
     }
 
+    /**
+     * Rozpoczyna aktualizację lokalizacji.
+     */
     private fun startLocationUpdates() {
         val locationRequest = LocationRequest.create().apply {
             interval = 1000
@@ -161,6 +184,9 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
     }
 
+    /**
+     * Aktualizuje lokalizację na mapie i oblicza dane aktywności.
+     */
     private fun updateLocation(location: Location) {
         if (lastLocation != null) {
             locList.add(LatLng(location.latitude, location.longitude))
@@ -185,10 +211,16 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         googleMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
     }
 
+    /**
+     * Zatrzymuje aktualizację lokalizacji.
+     */
     private fun stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(object : LocationCallback() {})
     }
 
+    /**
+     * Zapisuje dane aktywności rowerowej w Firebase.
+     */
     private fun saveCyclingDataToFirebase() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val databaseReference = FirebaseDatabase.getInstance().getReference("users/${currentUser?.uid}/cycling")
@@ -208,6 +240,9 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
             }
     }
 
+    /**
+     * Resetuje dane aktywności.
+     */
     private fun resetActivity(clearPolyline: Boolean = false) {
         distanceTraveled = 0f
         lastLocation = null
@@ -222,6 +257,9 @@ class BikeActivityFragment : Fragment(), OnMapReadyCallback {
         }
     }
 
+    /**
+     * Obsługuje żądania uprawnień.
+     */
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {

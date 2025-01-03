@@ -19,6 +19,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import android.content.Context
 
+/**
+ * @class MainActivity
+ * Główna aktywność aplikacji, która obsługuje nawigację w aplikacji oraz wyświetla różne fragmenty.
+ */
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
 
     private lateinit var drawerLayout: DrawerLayout
@@ -28,6 +32,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private lateinit var userEmail: TextView
     private lateinit var userProfileImage: ImageView
 
+    /**
+     * Metoda wywoływana przy tworzeniu aktywności. Inicjalizuje interfejs użytkownika, Firebase, oraz dane użytkownika.
+     *
+     * @param savedInstanceState Stan zapisany aktywności.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -62,6 +71,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * Konfiguruje przełącznik otwierania i zamykania szuflady nawigacyjnej.
+     *
+     * @param toolbar Toolbar używany w aplikacji.
+     */
     private fun setupDrawerToggle(toolbar: Toolbar) {
         val toggle = ActionBarDrawerToggle(
             this,
@@ -74,6 +88,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         toggle.syncState()
     }
 
+    /**
+     * Ładuje dane użytkownika z lokalnego magazynu i Firebase.
+     */
     private fun loadUserData() {
         val sharedPreferences = getSharedPreferences("UserData", Context.MODE_PRIVATE)
         val storedUserName = sharedPreferences.getString("username", "Unknown User")
@@ -99,6 +116,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * Pobiera dane użytkownika z Firebase.
+     */
     private fun loadDataFromFirebase() {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
@@ -138,6 +158,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * Obsługuje wybór elementów menu nawigacyjnego.
+     *
+     * @param item Wybrany element menu.
+     * @return True, jeśli element został poprawnie obsłużony.
+     */
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.nav_profile -> {
@@ -177,12 +203,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         return true
     }
 
+    /**
+     * Zastępuje aktualny fragment nowym.
+     *
+     * @param fragment Nowy fragment do wyświetlenia.
+     */
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
     }
 
+    /**
+     * Obsługuje naciśnięcie przycisku wstecz.
+     */
     override fun onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START)

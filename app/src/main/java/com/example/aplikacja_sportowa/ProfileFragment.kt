@@ -17,8 +17,12 @@ import android.graphics.BitmapFactory
 import android.widget.Toast
 import android.content.Context
 
+/**
+ * Fragment obsługujący widok profilu użytkownika.
+ */
 class ProfileFragment : Fragment() {
 
+    // Inicjalizacja zmiennych do obsługi Firebase i widoków
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var database: DatabaseReference
     private lateinit var usernameTextView: TextView
@@ -32,12 +36,16 @@ class ProfileFragment : Fragment() {
     private lateinit var editAccountButton: Button
     private lateinit var stepsTextView: TextView
 
+    /**
+     * Tworzy widok fragmentu i inicjalizuje widżety.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_profile, container, false)
 
+        // Przypisanie widżetów do zmiennych
         usernameTextView = view.findViewById(R.id.usernameTextView)
         emailTextView = view.findViewById(R.id.emailTextView)
         ageTextView = view.findViewById(R.id.ageTextView)
@@ -49,11 +57,14 @@ class ProfileFragment : Fragment() {
         editAccountButton = view.findViewById(R.id.editButton)
         stepsTextView = view.findViewById(R.id.stepsTextView)
 
+        // Inicjalizacja Firebase
         firebaseAuth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("Users")
 
+        // Załadowanie danych użytkownika
         loadUserData()
 
+        // Obsługa przycisków
         editAccountButton.setOnClickListener {
             navigateToEditAccountFragment()
         }
@@ -65,6 +76,9 @@ class ProfileFragment : Fragment() {
         return view
     }
 
+    /**
+     * Ładuje dane użytkownika z lokalnych preferencji oraz Firebase.
+     */
     private fun loadUserData() {
         val sharedPreferences = requireContext().getSharedPreferences("UserData", Context.MODE_PRIVATE)
         val username = sharedPreferences.getString("username", "N/A")
@@ -75,6 +89,7 @@ class ProfileFragment : Fragment() {
         val weight = sharedPreferences.getString("weight", "N/A")
         val stepCount = sharedPreferences.getString("stepCount", "N/A")
 
+        // Ustawienie tekstów w widokach
         usernameTextView.text = "Username: $username"
         emailTextView.text = "Email: $email"
         ageTextView.text = "Age: $age"
@@ -83,6 +98,7 @@ class ProfileFragment : Fragment() {
         weightTextView.text = "Weight: $weight kg"
         stepsTextView.text = "Steps: $stepCount"
 
+        // Ładowanie zdjęcia profilowego
         val profileImageBase64 = sharedPreferences.getString("profileImage", null)
         if (!profileImageBase64.isNullOrEmpty()) {
             val imageBytes = Base64.decode(profileImageBase64, Base64.DEFAULT)
@@ -95,11 +111,15 @@ class ProfileFragment : Fragment() {
             profileImageView.setImageResource(R.drawable.logo_aplikacja)
         }
 
+        // Pobranie danych z Firebase
         if (firebaseAuth.currentUser != null) {
             loadDataFromFirebase()
         }
     }
 
+    /**
+     * Pobiera dane użytkownika z Firebase i zapisuje je lokalnie.
+     */
     private fun loadDataFromFirebase() {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
@@ -115,6 +135,7 @@ class ProfileFragment : Fragment() {
                     val stepCount = snapshot.child("stepCount").value.toString()
                     val profileImageBase64 = snapshot.child("image").value?.toString()
 
+                    // Zapisanie danych lokalnie
                     val sharedPreferences = requireContext().getSharedPreferences("UserData", Context.MODE_PRIVATE)
                     val editor = sharedPreferences.edit()
                     editor.putString("username", username)
@@ -129,6 +150,7 @@ class ProfileFragment : Fragment() {
                     }
                     editor.apply()
 
+                    // Aktualizacja widoków
                     usernameTextView.text = "Username: $username"
                     emailTextView.text = "Email: $email"
                     ageTextView.text = "Age: $age"
@@ -154,6 +176,9 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * Przechodzi do fragmentu edycji konta użytkownika.
+     */
     private fun navigateToEditAccountFragment() {
         val editAccountFragment = EditAccountFragment()
         val transaction = requireActivity().supportFragmentManager.beginTransaction()
@@ -162,6 +187,9 @@ class ProfileFragment : Fragment() {
         transaction.commit()
     }
 
+    /**
+     * Wyświetla dialog potwierdzenia usunięcia konta.
+     */
     private fun showDeleteAccountDialog() {
         val builder = AlertDialog.Builder(requireContext())
         builder.setMessage("Do you want to delete your account?")
@@ -172,6 +200,9 @@ class ProfileFragment : Fragment() {
         alert.show()
     }
 
+    /**
+     * Usuwa konto użytkownika z Firebase.
+     */
     private fun deleteUserAccount() {
         val currentUser = firebaseAuth.currentUser
         if (currentUser != null) {
@@ -194,6 +225,9 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    /**
+     * Wyświetla komunikat błędu.
+     */
     private fun showError(message: String) {
         val builder = AlertDialog.Builder(requireContext())
         builder.setMessage(message)
@@ -203,6 +237,9 @@ class ProfileFragment : Fragment() {
         alert.show()
     }
 
+    /**
+     * Wyświetla wiadomość Toast.
+     */
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show()
     }

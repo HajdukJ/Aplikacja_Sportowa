@@ -39,7 +39,14 @@ import androidx.core.app.NotificationCompat
 import java.io.File
 import java.io.FileOutputStream
 
+/**
+ * Fragment odpowiedzialny za aktywność biegania.
+ * Zawiera funkcje do śledzenia lokalizacji na mapie, liczenia kroków,
+ * obliczania dystansu, czasu, tempa oraz zapisania danych do Firebase.
+ */
 class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener {
+
+    // Deklaracja zmiennych
     private var googleMap: GoogleMap? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var startButton: Button
@@ -62,39 +69,46 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
 
     companion object {
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        private const val DEFAULT_ZOOM = 17f
+        private const val DEFAULT_ZOOM = 17f  // Domyślny poziom zoomu mapy
     }
 
+    /**
+     * Funkcja wywoływana przy tworzeniu widoku fragmentu.
+     * Inicjalizuje mapę, przyciski i inne elementy interfejsu.
+     */
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val rootView = inflater.inflate(R.layout.fragment_run_activity, container, false)
+
+        // Inicjalizacja zmiennych
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
         val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
         mapFragment?.getMapAsync(this)
+
         startButton = rootView.findViewById(R.id.startButton)
         finishButton = rootView.findViewById(R.id.finishButton)
 
-        startButton.setOnClickListener {
-            onStartClick()
-        }
+        // Obsługa kliknięć przycisków
+        startButton.setOnClickListener { onStartClick() }
+        finishButton.setOnClickListener { onFinishClick() }
 
-        finishButton.setOnClickListener {
-            onFinishClick()
-        }
-
+        // Inicjalizacja menedżera sensorów
         sensorManager = requireContext().getSystemService(Context.SENSOR_SERVICE) as SensorManager
         stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER)
 
+        // Inicjalizacja menedżera powiadomień
         notificationManager = requireContext().getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         createNotificationChannel()
 
-        startButton.setOnClickListener { onStartClick() }
-        finishButton.setOnClickListener { onFinishClick() }
         return rootView
     }
 
+    /**
+     * Funkcja wywoływana po załadowaniu mapy.
+     * Sprawdza uprawnienia do lokalizacji i uruchamia lokalizację użytkownika.
+     */
     override fun onMapReady(map: GoogleMap) {
         googleMap = map
         if (ActivityCompat.checkSelfPermission(
@@ -111,6 +125,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
+    /**
+     * Funkcja włącza śledzenie lokalizacji użytkownika na mapie.
+     */
     private fun enableUserLocation() {
         googleMap?.isMyLocationEnabled = true
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
@@ -121,6 +138,10 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
+    /**
+     * Funkcja uruchamia aktywność biegu.
+     * Inicjalizuje start, odliczanie, lokalizację i liczenie kroków.
+     */
     private fun onStartClick() {
         if (!isRunning) {
             resetActivity(true)
@@ -133,6 +154,10 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
+    /**
+     * Funkcja kończy aktywność biegu.
+     * Zatrzymuje śledzenie lokalizacji, liczenie kroków i zapisuje dane.
+     */
     private fun onFinishClick() {
         if (isRunning) {
             isRunning = false
@@ -151,6 +176,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
+    /**
+     * Funkcja uruchamia odliczanie przed rozpoczęciem biegu.
+     */
     private fun startCountdown() {
         isCountingDown = true
         val countdown = arrayOf(3, 2, 1, "START!")
@@ -171,6 +199,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         })
     }
 
+    /**
+     * Funkcja zaczyna pobierać aktualną lokalizację co sekundę.
+     */
     private fun startLocationUpdates() {
         val locationRequest = LocationRequest.create().apply {
             interval = 1000
@@ -190,6 +221,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
     }
 
+    /**
+     * Funkcja aktualizuje lokalizację na mapie.
+     */
     private fun updateLocation(location: Location) {
         if (lastLocation != null) {
             locList.add(LatLng(location.latitude, location.longitude))
@@ -209,6 +243,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         googleMap?.animateCamera(CameraUpdateFactory.newLatLng(LatLng(location.latitude, location.longitude)))
     }
 
+    /**
+     * Funkcja oblicza tempo biegu na podstawie przebytego dystansu i upływającego czasu.
+     */
     private fun calculatePace(distance: Float, time: Long): String {
         if (distance > 0) {
             val paceInMinutes = (time.toFloat() / 60) / (distance / 1000)
@@ -219,6 +256,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         return "00:00"
     }
 
+    /**
+     * Funkcja konwertuje sekundy na format godzin, minut, sekund.
+     */
     private fun convertSecondsToHMSTime(seconds: Long): Triple<Int, Int, Int> {
         val hours = (seconds / 3600).toInt()
         val minutes = ((seconds % 3600) / 60).toInt()
@@ -226,10 +266,16 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         return Triple(hours, minutes, remainingSeconds)
     }
 
+    /**
+     * Funkcja zatrzymuje pobieranie lokalizacji.
+     */
     private fun stopLocationUpdates() {
         fusedLocationClient.removeLocationUpdates(object : LocationCallback() {})
     }
 
+    /**
+     * Funkcja zapisuje dane biegu do Firebase.
+     */
     private fun saveRunDataToFirebase(mapImagePath: String) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         val databaseReference = FirebaseDatabase.getInstance().getReference("users/${currentUser?.uid}/runs")
@@ -250,6 +296,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
             }
     }
 
+    /**
+     * Funkcja resetuje aktywność, czyszcząc mapę i przywracając domyślne wartości.
+     */
     private fun resetActivity(clearMap: Boolean) {
         if (clearMap) {
             locList.clear()
@@ -261,6 +310,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         lastLocation = null
     }
 
+    /**
+     * Funkcja tworzy powiadomienie.
+     */
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -274,6 +326,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
+    /**
+     * Funkcja rozpoczyna liczenie kroków przy pomocy sensora kroków.
+     */
     private fun startStepCounting() {
         if (stepSensor != null) {
             sensorManager.registerListener(this, stepSensor, SensorManager.SENSOR_DELAY_UI)
@@ -281,11 +336,17 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
+    /**
+     * Funkcja zatrzymuje liczenie kroków i usuwa powiadomienie.
+     */
     private fun stopStepCounting() {
         sensorManager.unregisterListener(this)
         notificationManager.cancel(NOTIFICATION_ID)
     }
 
+    /**
+     * Funkcja aktualizuje powiadomienie o liczbie kroków.
+     */
     private fun updateNotification(stepCount: Int) {
         val notification = NotificationCompat.Builder(requireContext(), CHANNEL_ID)
             .setContentTitle("Step Counter")
@@ -306,6 +367,9 @@ class RunActivityFragment : Fragment(), OnMapReadyCallback, SensorEventListener 
         }
     }
 
+    /**
+     * Funkcja zapisuje zrzut mapy do pliku.
+     */
     private fun saveMapSnapshot(fileName: String, onSaved: (File?) -> Unit) {
         googleMap?.snapshot { bitmap ->
             if (bitmap != null) {
