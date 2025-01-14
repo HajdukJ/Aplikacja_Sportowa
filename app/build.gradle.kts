@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
     alias(libs.plugins.map.secret)
+    alias(libs.plugins.dokka)
 }
 
 android {
@@ -26,6 +27,26 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+        }
+    }
+    tasks.dokkaHtml {
+        dokkaSourceSets {
+            configureEach {
+                includeNonPublic.set(false)
+                skipDeprecated.set(true)
+                reportUndocumented.set(true)
+                jdkVersion.set(8)
+            }
+        }
+    }
+    tasks.dokkaJavadoc {
+        dokkaSourceSets {
+            configureEach {
+                includeNonPublic.set(false)
+                skipDeprecated.set(true)
+                reportUndocumented.set(true)
+                jdkVersion.set(8)
+            }
         }
     }
     compileOptions {
